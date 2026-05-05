@@ -1,0 +1,305 @@
+{
+  "name": "PDF Factura a Excel (Añadir líneas acumulativas)",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerOn": "folder",
+        "path": "/n8n-watch/pdf_excell/entrada_facturas_pdf",
+        "events": [
+          "add"
+        ],
+        "options": {
+          "awaitWriteFinish": true,
+          "usePolling": true
+        }
+      },
+      "type": "n8n-nodes-base.localFileTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "id": "18dae121-9ea2-4162-97f3-ca5226c6980e",
+      "name": "Nueva Factura en Carpeta"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [200, 0],
+      "id": "read-pdf-node-id",
+      "name": "Leer PDF"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $binary.data.fileExtension.toLowerCase() }}",
+              "operation": "equal",
+              "value2": "pdf"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [400, 0],
+      "id": "node-check-pdf-id",
+      "name": "¿Es un PDF?"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [600, -100],
+      "id": "b3000001-0001-0001-0001-000000000001",
+      "name": "Extraer Texto PDF"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.text }}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [800, -100],
+      "id": "node-check-ocr-id",
+      "name": "¿Necesita OCR?"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {},\n  binary: $node[\"Leer PDF\"].binary\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 150],
+      "id": "node-rescue-binary-ocr-id",
+      "name": "Pasar PDF a API"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ocr.space/parse/image",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "K87243588288957"
+            },
+            {
+              "name": "language",
+              "value": "spa"
+            },
+            {
+              "name": "isTable",
+              "value": "true"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1200, 150],
+      "id": "node-ocr-http-id",
+      "name": "OCR via API HTTP"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ \"model\": \"llama3.2\", \"format\": \"json\", \"prompt\": \"Extract invoice data into JSON. Response MUST be valid JSON only. Fields: empresa_nombre, empresa_cif, empresa_direccion, empresa_cp, empresa_ciudad, empresa_provincia, empresa_telefono, empresa_email, cliente_nombre, cliente_cif, cliente_direccion, cliente_cp, cliente_ciudad, cliente_provincia, factura_numero, factura_fecha, base_imponible, iva_porcentaje, cuota_iva, total_factura, forma_pago, vencimiento, lineas: array of {descripcion, cantidad, precio_unitario, importe, iva_porcentaje}. Text: \" + (($json.ParsedResults && $json.ParsedResults[0] && $json.ParsedResults[0].ParsedText) || $json.text || '').replace(/[\\n\\r]/g, ' ').replace(/\\\"/g, '\\\\\\\"'), \"stream\": false }) }}",
+        "options": {
+          "timeout": 3600000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1450, 0],
+      "id": "b3000001-0001-0001-0001-000000000002",
+      "name": "AI Extraer Datos Factura"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "/data/pdf_excell/tabla_excell_facturas.xls",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [1700, 0],
+      "id": "b3000001-0001-0001-0001-000000000003",
+      "name": "Leer Excel Existente",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtener los datos extraídos de la IA\nconst aiResponse = $('AI Extraer Datos Factura').first().json.response;\nlet d;\ntry {\n  d = JSON.parse(aiResponse.match(/\\{[\\s\\S]*\\}/)[0]);\n} catch(e) {\n  throw new Error('Error IA: No se pudo leer el JSON de Ollama');\n}\n\n// 2. Limpiar caracteres y preparar la nueva fila\nconst esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\n\n// Función para asegurar formato DD-MM-AAAA\nconst formatDate = (dateStr) => {\n  if (!dateStr) return '';\n  const cleanDate = String(dateStr).split('T')[0].trim();\n  const parts = cleanDate.split(/[-/.]/);\n  if (parts.length === 3) {\n    if (parts[0].length === 4) { // YYYY-MM-DD\n      return `${parts[2].padStart(2, '0')}-${parts[1].padStart(2, '0')}-${parts[0]}`;\n    }\n    if (parts[2].length === 4) { // DD-MM-YYYY\n      return `${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}-${parts[2]}`;\n    }\n  }\n  return dateStr;\n};\n\nconst f_numero = esc(d.factura_numero);\nconst f_fecha = formatDate(d.factura_fecha);\n\nconst dirE = [d.empresa_direccion, d.empresa_cp, d.empresa_ciudad, d.empresa_provincia].filter(Boolean).join(', ');\nconst dirC = [d.cliente_direccion, d.cliente_cp, d.cliente_ciudad, d.cliente_provincia].filter(Boolean).join(', ');\nconst desc = (d.lineas || []).map(l => l.descripcion).filter(Boolean).join(' | ') || 'Factura';\n\n// ORDEN: Nº Factura (1), Fecha (2)\nlet newRow = `<Row><Cell><Data ss:Type=\"String\">${f_numero}</Data></Cell><Cell><Data ss:Type=\"String\">${f_fecha}</Data></Cell><Cell><Data ss:Type=\"String\">${esc(d.empresa_nombre)}</Data></Cell><Cell><Data ss:Type=\"String\">${esc(d.empresa_cif)}</Data></Cell><Cell><Data ss:Type=\"String\">${esc(dirE)}</Data></Cell><Cell><Data ss:Type=\"String\">${esc(d.empresa_telefono)}</Data></Cell><Cell><Data ss:Type=\"String\">${esc(d.cliente_nombre)}</Data></Cell><Cell><Data ss:Type=\"String\">${esc(d.cliente_cif)}</Data></Cell><Cell><Data ss:Type=\"String\">${esc(dirC)}</Data></Cell><Cell><Data ss:Type=\"String\">${esc(desc)}</Data></Cell><Cell><Data ss:Type=\"Number\">1</Data></Cell><Cell><Data ss:Type=\"Number\">${parseFloat(d.base_imponible)||0}</Data></Cell><Cell><Data ss:Type=\"Number\">${parseFloat(d.base_imponible)||0}</Data></Cell><Cell><Data ss:Type=\"Number\">${parseFloat(d.iva_porcentaje)||0}</Data></Cell><Cell><Data ss:Type=\"Number\">${parseFloat(d.base_imponible)||0}</Data></Cell><Cell><Data ss:Type=\"Number\">${parseFloat(d.cuota_iva)||0}</Data></Cell><Cell><Data ss:Type=\"Number\">${parseFloat(d.total_factura)||0}</Data></Cell><Cell><Data ss:Type=\"String\">${esc(d.forma_pago)}</Data></Cell><Cell><Data ss:Type=\"String\">${esc(d.vencimiento)}</Data></Cell></Row>`;\n\n// 3. Extraer de manera segura el Excel existente\nlet xml = '';\nconst items = $input.all();\nif (items.length > 0 && items[0].binary && items[0].binary.data) {\n  try {\n    const buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\n    if (buffer) xml = buffer.toString('utf-8');\n  } catch (err) {\n    if (items[0].binary.data.data) xml = Buffer.from(items[0].binary.data.data, 'base64').toString('utf-8');\n  }\n}\n\n// 4. Inyectar fila o crear estructura\nconst tableEndRegex = /(<\\/(?:ss:)?Table\\s*>)/i;\n\nif (xml && tableEndRegex.test(xml)) {\n  xml = xml.replace(tableEndRegex, newRow + '\\n$1');\n} else {\n  const h = '<Row ss:Height=\"30\"><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Nº Factura</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Fecha</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Empresa</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">CIF Empresa</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Dir Empresa</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Tel</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Cliente</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">CIF Cliente</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Dir Cliente</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Desc</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Cant</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Precio</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Imp</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">%IVA</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Base</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Cuota</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Total</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Pago</Data></Cell><Cell ss:StyleID=\"header\"><Data ss:Type=\"String\">Venc</Data></Cell></Row>';\n  xml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?><?mso-application progid=\"Excel.Sheet\"?><Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\"><Styles><Style ss:ID=\"Default\"><Font ss:FontName=\"Calibri\" ss:Size=\"11\"/></Style><Style ss:ID=\"header\"><Font ss:Bold=\"1\" ss:Color=\"#FFFFFF\" ss:FontName=\"Calibri\" ss:Size=\"11\"/><Interior ss:Color=\"#1F4E79\" ss:Pattern=\"Solid\"/><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\" ss:WrapText=\"1\"/></Style></Styles><Worksheet ss:Name=\"Facturas\"><Table><Column ss:Width=\"100\"/><Column ss:Width=\"90\"/><Column ss:Width=\"180\"/><Column ss:Width=\"110\"/><Column ss:Width=\"250\"/><Column ss:Width=\"100\"/><Column ss:Width=\"180\"/><Column ss:Width=\"110\"/><Column ss:Width=\"250\"/><Column ss:Width=\"200\"/><Column ss:Width=\"50\"/><Column ss:Width=\"80\"/><Column ss:Width=\"80\"/><Column ss:Width=\"50\"/><Column ss:Width=\"80\"/><Column ss:Width=\"80\"/><Column ss:Width=\"80\"/><Column ss:Width=\"100\"/><Column ss:Width=\"90\"/>${h}${newRow}</Table></Worksheet></Workbook>`;\n}\n\nconst buffer = Buffer.from(xml, 'utf-8');\nreturn [{ json: { success: true }, binary: { data: { data: buffer.toString('base64'), mimeType: 'application/vnd.ms-excel', fileName: 'tabla_excell_facturas.xls', fileExtension: 'xls' } } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1950, 0],
+      "id": "b3000001-0001-0001-0001-000000000004",
+      "name": "Anadir Lineas Factura"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/data/pdf_excell/tabla_excell_facturas.xls",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [2200, 0],
+      "id": "b3000001-0001-0001-0001-000000000005",
+      "name": "Guardar Excel"
+    }
+  ],
+  "connections": {
+    "Nueva Factura en Carpeta": {
+      "main": [
+        [
+          {
+            "node": "Leer PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer PDF": {
+      "main": [
+        [
+          {
+            "node": "¿Es un PDF?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es un PDF?": {
+      "main": [
+        [
+          {
+            "node": "Extraer Texto PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pasar PDF a API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Texto PDF": {
+      "main": [
+        [
+          {
+            "node": "¿Necesita OCR?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Necesita OCR?": {
+      "main": [
+        [
+          {
+            "node": "Pasar PDF a API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Extraer Datos Factura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pasar PDF a API": {
+      "main": [
+        [
+          {
+            "node": "OCR via API HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OCR via API HTTP": {
+      "main": [
+        [
+          {
+            "node": "AI Extraer Datos Factura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Extraer Datos Factura": {
+      "main": [
+        [
+          {
+            "node": "Leer Excel Existente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Excel Existente": {
+      "main": [
+        [
+          {
+            "node": "Anadir Lineas Factura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anadir Lineas Factura": {
+      "main": [
+        [
+          {
+            "node": "Guardar Excel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
