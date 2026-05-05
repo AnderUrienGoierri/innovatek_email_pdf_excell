@@ -1,35 +1,27 @@
 {
-  "name": "PDF Factura a Excel (Añadir líneas acumulativas)",
+  "name": "Facturación Final (Paperless + Excel)",
   "nodes": [
     {
       "parameters": {
         "triggerOn": "folder",
         "path": "/n8n-watch/pdf_excell/entrada_facturas_pdf",
-        "events": [
-          "add"
-        ],
-        "options": {
-          "awaitWriteFinish": true,
-          "usePolling": true
-        }
+        "events": ["add"],
+        "options": {"awaitWriteFinish": true, "usePolling": true}
       },
       "type": "n8n-nodes-base.localFileTrigger",
       "typeVersion": 1,
       "position": [0, 0],
-      "id": "18dae121-9ea2-4162-97f3-ca5226c6980e",
-      "name": "Nueva Factura en Carpeta"
+      "name": "Entrada"
     },
     {
       "parameters": {
         "operation": "read",
-        "fileSelector": "={{ $json.path }}",
-        "options": {}
+        "fileSelector": "={{ $json.path }}"
       },
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
       "position": [200, 0],
-      "id": "read-pdf-node-id",
-      "name": "Leer PDF"
+      "name": "Leer"
     },
     {
       "parameters": {
@@ -46,20 +38,17 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [400, 0],
-      "id": "node-check-pdf-id",
-      "name": "¿Es un PDF?"
+      "name": "¿PDF?"
     },
     {
       "parameters": {
         "operation": "pdf",
-        "binaryPropertyName": "data",
-        "options": {}
+        "binaryPropertyName": "data"
       },
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1,
       "position": [600, -100],
-      "id": "b3000001-0001-0001-0001-000000000001",
-      "name": "Extraer Texto PDF"
+      "name": "Texto"
     },
     {
       "parameters": {
@@ -75,53 +64,45 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [800, -100],
-      "id": "node-check-ocr-id",
-      "name": "¿Necesita OCR?"
-    },
-    {
-      "parameters": {
-        "jsCode": "return [{\n  json: {},\n  binary: $node[\"Leer PDF\"].binary\n}];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [1000, 150],
-      "id": "node-rescue-binary-ocr-id",
-      "name": "Pasar PDF a API"
+      "name": "¿Vacío?"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.ocr.space/parse/image",
+        "url": "http://paperless_webserver:8000/api/documents/post_document/",
         "sendBody": true,
         "contentType": "multipart-form-data",
         "bodyParameters": {
           "parameters": [
             {
-              "name": "apikey",
-              "value": "K87243588288957"
-            },
-            {
-              "name": "language",
-              "value": "spa"
-            },
-            {
-              "name": "isTable",
-              "value": "true"
-            },
-            {
               "parameterType": "formBinaryData",
-              "name": "file",
+              "name": "document",
               "inputDataFieldName": "data"
             }
           ]
-        },
-        "options": {}
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [1200, 150],
-      "id": "node-ocr-http-id",
-      "name": "OCR via API HTTP"
+      "position": [1000, 100],
+      "name": "OCR"
+    },
+    {
+      "parameters": { "amount": 10, "unit": "seconds" },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1200, 100],
+      "name": "Espera"
+    },
+    {
+      "parameters": {
+        "url": "http://paperless_webserver:8000/api/documents/",
+        "options": { "queryParameters": { "parameters": [{ "name": "page_size", "value": "1" }] } }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1400, 100],
+      "name": "Resultado"
     },
     {
       "parameters": {
@@ -129,177 +110,56 @@
         "url": "http://ollama:11434/api/generate",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ \"model\": \"llama3.2\", \"format\": \"json\", \"prompt\": \"Extract invoice data into a JSON object. IMPORTANT: 'factura_numero' is the unique reference ID of the invoice. 'factura_fecha' is the date of issue. Do not swap them. Fields: empresa_nombre, empresa_cif, empresa_direccion, empresa_cp, empresa_ciudad, empresa_provincia, empresa_telefono, empresa_email, cliente_nombre, cliente_cif, cliente_direccion, cliente_cp, cliente_ciudad, cliente_provincia, factura_numero, factura_fecha, base_imponible, iva_porcentaje, cuota_iva, total_factura, forma_pago, vencimiento, lineas: array of {descripcion, cantidad, precio_unitario, importe, iva_porcentaje}. Text: \" + (($json.ParsedResults && $json.ParsedResults[0] && $json.ParsedResults[0].ParsedText) || $json.text || '').replace(/[\\n\\r]/g, ' ').replace(/\\\"/g, '\\\\\\\"'), \"stream\": false }) }}",
-        "options": {
-          "timeout": 3600000
-        }
+        "jsonBody": "={{ JSON.stringify({ model: 'llama3.2', format: 'json', prompt: 'Extract JSON: ' + (($json.results && $json.results[0]) ? $json.results[0].content : ($json.text || '')).substring(0, 2000), stream: false }) }}",
+        "options": { "timeout": 3600000 }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [1450, 0],
-      "id": "b3000001-0001-0001-0001-000000000002",
-      "name": "AI Extraer Datos Factura"
+      "position": [1650, 0],
+      "name": "Ollama"
     },
     {
       "parameters": {
         "operation": "read",
         "fileSelector": "/data/pdf_excell/tabla_excell_facturas.xls",
-        "options": {}
+        "continueOnFail": true
       },
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
-      "position": [1700, 0],
-      "id": "b3000001-0001-0001-0001-000000000003",
-      "name": "Leer Excel Existente",
-      "continueOnFail": true
+      "position": [1850, 0],
+      "name": "Excel"
     },
     {
       "parameters": {
-        "jsCode": "const aiResponse = $('AI Extraer Datos Factura').first().json.response; let d; try { d = JSON.parse(aiResponse.match(/\\{[\\s\\S]*\\}/)[0]); } catch(e) { throw new Error('Error IA: No se pudo leer el JSON de Ollama'); } let rawNum = String(d.factura_numero || '').trim(); let rawFec = String(d.factura_fecha || '').trim(); const isDatePattern = (s) => { const parts = s.split(/[\\-\\/\\.]/); return parts.length === 3 && parts.every(p => /^\\d+$/.test(p)); }; const isOnlyDigits = (s) => /^\\d+$/.test(s); if (isDatePattern(rawNum) && (isOnlyDigits(rawFec) || !rawFec)) { [rawNum, rawFec] = [rawFec, rawNum]; } const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;'); const formatDate = (dateStr) => { if (!dateStr) return ''; const cleanDate = String(dateStr).split('T')[0].trim(); const parts = cleanDate.split(/[-/.]/); if (parts.length === 3) { if (parts[0].length === 4) return `${parts[2].padStart(2, '0')}-${parts[1].padStart(2, '0')}-${parts[0]}`; if (parts[2].length === 4) return `${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}-${parts[2]}`; } return dateStr; }; const f_numero = esc(rawNum); const f_fecha = formatDate(rawFec); const dirE = [d.empresa_direccion, d.empresa_cp, d.empresa_ciudad, d.empresa_provincia].filter(Boolean).join(', '); const dirC = [d.cliente_direccion, d.cliente_cp, d.cliente_ciudad, d.cliente_provincia].filter(Boolean).join(', '); const desc = (d.lineas || []).map(l => l.descripcion).filter(Boolean).join(' | ') || 'Factura'; let newRow = `<ss:Row><ss:Cell><ss:Data ss:Type=\"String\">${f_numero}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">${f_fecha}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">${esc(d.empresa_nombre)}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">${esc(d.empresa_cif)}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">${esc(dirE)}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">${esc(d.empresa_telefono)}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">${esc(d.cliente_nombre)}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">${esc(d.cliente_cif)}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">${esc(dirC)}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">${esc(desc)}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"Number\">1</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"Number\">${parseFloat(d.base_imponible)||0}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"Number\">${parseFloat(d.base_imponible)||0}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"Number\">${parseFloat(d.iva_porcentaje)||0}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"Number\">${parseFloat(d.base_imponible)||0}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"Number\">${parseFloat(d.cuota_iva)||0}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"Number\">${parseFloat(d.total_factura)||0}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">${esc(d.forma_pago)}</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">${esc(d.vencimiento)}</ss:Data></ss:Cell></ss:Row>`; let xml = ''; const items = $input.all(); try { const buffer = await this.helpers.getBinaryDataBuffer(0, 'data'); if (buffer) xml = buffer.toString('utf-8'); } catch (err) { if (items[0].binary && items[0].binary.data && items[0].binary.data.data) xml = Buffer.from(items[0].binary.data.data, 'base64').toString('utf-8'); } const tableEndRegex = /(<\\/(?:ss:)?Table\\s*>)/i; if (xml && tableEndRegex.test(xml)) { xml = xml.replace(tableEndRegex, newRow + '\\n$1'); } else { xml = '<?xml version=\"1.0\" encoding=\"UTF-8\"?><?mso-application progid=\"Excel.Sheet\"?><Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\"><Styles><Style ss:ID=\"Default\"><Font ss:FontName=\"Calibri\" ss:Size=\"11\"/></Style><Style ss:ID=\"header\"><Font ss:Bold=\"1\" ss:Color=\"#FFFFFF\" ss:FontName=\"Calibri\" ss:Size=\"11\"/><Interior ss:Color=\"#1F4E79\" ss:Pattern=\"Solid\"/><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\" ss:WrapText=\"1\"/></Style></Styles><Worksheet ss:Name=\"Facturas\"><Table><Column ss:Width=\"100\"/><Column ss:Width=\"90\"/><Column ss:Width=\"180\"/><Column ss:Width=\"110\"/><Column ss:Width=\"250\"/><Column ss:Width=\"100\"/><Column ss:Width=\"180\"/><Column ss:Width=\"110\"/><Column ss:Width=\"250\"/><Column ss:Width=\"200\"/><Column ss:Width=\"50\"/><Column ss:Width=\"80\"/><Column ss:Width=\"80\"/><Column ss:Width=\"50\"/><Column ss:Width=\"80\"/><Column ss:Width=\"80\"/><Column ss:Width=\"80\"/><Column ss:Width=\"100\"/><Column ss:Width=\"90\"/><ss:Row ss:Height=\"30\"><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Nº Factura</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Fecha</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Empresa</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">CIF Empresa</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Dir Empresa</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Tel</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Cliente</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">CIF Cliente</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Dir Cliente</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Desc</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Cant</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Precio</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Imp</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">%IVA</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Base</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Cuota</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Total</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Pago</ss:Data></ss:Cell><ss:Cell ss:StyleID=\"header\"><ss:Data ss:Type=\"String\">Venc</ss:Data></ss:Cell></ss:Row>' + newRow + '</Table></Worksheet></Workbook>'; } const buffer = Buffer.from(xml, 'utf-8'); return [{ json: { success: true }, binary: { data: { data: buffer.toString('base64'), mimeType: 'application/vnd.ms-excel', fileName: 'tabla_excell_facturas.xls', fileExtension: 'xls' } } }];"
+        "jsCode": "const ai = $('Ollama').first().json.response; let d; try { d = JSON.parse(ai.match(/\\{[\\s\\S]*\\}/)[0]); } catch(e) { throw new Error('No JSON'); } let n = String(d.factura_numero || '').trim(); let f = String(d.factura_fecha || '').trim(); const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;'); const fD = (s) => { if (!s) return ''; const p = String(s).split(/[-/.]/); return p.length === 3 ? (p[0].length === 4 ? `${p[2]}-${p[1]}-${p[0]}` : `${p[0]}-${p[1]}-${p[2]}`) : s; }; const desc = (d.lineas || []).map(l => l.descripcion).join(' | ') || 'Factura'; let row = '<ss:Row><ss:Cell><ss:Data ss:Type=\"String\">' + esc(n) + '</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">' + fD(f) + '</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">' + esc(d.empresa_nombre) + '</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">' + esc(d.empresa_cif) + '</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">' + (parseFloat(d.total_factura)||0) + '</ss:Data></ss:Cell></ss:Row>'; let xml = ''; try { const b = await this.helpers.getBinaryDataBuffer(0, 'data'); if (b) xml = b.toString('utf-8'); } catch(e) {} const re = /(<\\/(?:ss:)?Table\\s*>)/i; if (xml && re.test(xml)) { xml = xml.replace(re, row + '\\n$1'); } else { xml = '<?xml version=\"1.0\" encoding=\"UTF-8\"?><?mso-application progid=\"Excel.Sheet\"?><Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\"><Table><ss:Row><ss:Cell><ss:Data ss:Type=\"String\">Factura</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">Fecha</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">Empresa</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">CIF</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type=\"String\">Total</ss:Data></ss:Cell></ss:Row>' + row + '</Table></Workbook>'; } return [{ json: { success: true }, binary: { data: { data: Buffer.from(xml, 'utf-8').toString('base64'), mimeType: 'application/vnd.ms-excel', fileName: 'tabla_excell_facturas.xls', fileExtension: 'xls' } } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1950, 0],
-      "id": "node-code-id",
-      "name": "Anadir Lineas Factura"
+      "position": [2050, 0],
+      "name": "Procesar"
     },
     {
       "parameters": {
         "operation": "write",
-        "fileName": "/data/pdf_excell/tabla_excell_facturas.xls",
-        "options": {}
+        "fileName": "/data/pdf_excell/tabla_excell_facturas.xls"
       },
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
-      "position": [2200, 0],
-      "id": "b3000001-0001-0001-0001-000000000005",
-      "name": "Guardar Excel"
+      "position": [2250, 0],
+      "name": "Guardar"
     }
   ],
   "connections": {
-    "Nueva Factura en Carpeta": {
-      "main": [
-        [
-          {
-            "node": "Leer PDF",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Leer PDF": {
-      "main": [
-        [
-          {
-            "node": "¿Es un PDF?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "¿Es un PDF?": {
-      "main": [
-        [
-          {
-            "node": "Extraer Texto PDF",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Pasar PDF a API",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extraer Texto PDF": {
-      "main": [
-        [
-          {
-            "node": "¿Necesita OCR?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "¿Necesita OCR?": {
-      "main": [
-        [
-          {
-            "node": "Pasar PDF a API",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "AI Extraer Datos Factura",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Pasar PDF a API": {
-      "main": [
-        [
-          {
-            "node": "OCR via API HTTP",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "OCR via API HTTP": {
-      "main": [
-        [
-          {
-            "node": "AI Extraer Datos Factura",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Extraer Datos Factura": {
-      "main": [
-        [
-          {
-            "node": "Leer Excel Existente",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Leer Excel Existente": {
-      "main": [
-        [
-          {
-            "node": "Anadir Lineas Factura",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Anadir Lineas Factura": {
-      "main": [
-        [
-          {
-            "node": "Guardar Excel",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
+    "Entrada": { "main": [[{ "node": "Leer", "type": "main", "index": 0 }]] },
+    "Leer": { "main": [[{ "node": "¿PDF?", "type": "main", "index": 0 }]] },
+    "¿PDF?": { "main": [[{ "node": "Texto", "type": "main", "index": 0 }], [{ "node": "OCR", "type": "main", "index": 0 }]] },
+    "Texto": { "main": [[{ "node": "¿Vacío?", "type": "main", "index": 0 }]] },
+    "¿Vacío?": { "main": [[{ "node": "OCR", "type": "main", "index": 0 }], [{ "node": "Ollama", "type": "main", "index": 0 }]] },
+    "OCR": { "main": [[{ "node": "Espera", "type": "main", "index": 0 }]] },
+    "Espera": { "main": [[{ "node": "Resultado", "type": "main", "index": 0 }]] },
+    "Resultado": { "main": [[{ "node": "Ollama", "type": "main", "index": 0 }]] },
+    "Ollama": { "main": [[{ "node": "Excel", "type": "main", "index": 0 }]] },
+    "Excel": { "main": [[{ "node": "Procesar", "type": "main", "index": 0 }]] },
+    "Procesar": { "main": [[{ "node": "Guardar", "type": "main", "index": 0 }]] }
   }
 }

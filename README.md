@@ -1,83 +1,63 @@
-# 🚀 Automatización de Facturas a Excel (n8n + Ollama)
+# 🚀 Automatización de Facturas 100% Local (n8n + Ollama Vision)
 
-Este repositorio contiene un sistema de automatización profesional diseñado para procesar facturas en múltiples formatos (PDF, PNG, JPG) y consolidar la información en un archivo Excel maestro de forma acumulativa.
+Este proyecto es una solución **Air-Gapped** (sin internet) para la extracción y consolidación de facturas. A diferencia de otras soluciones, todo el procesamiento de datos y el OCR se realizan de forma privada en tu propio servidor.
 
 ---
 
-## 🏗️ 1. Arquitectura del Workflow
+## 🏗️ 1. Arquitectura de Privacidad Total
 
-El flujo de trabajo (`email_pdf_excell.json`) ha sido diseñado para ser **indestructible** y **resiliente**. Utiliza inteligencia artificial local (Ollama) para la extracción de datos y una lógica de persistencia avanzada.
+El workflow (`email_pdf_excell.json`) utiliza inteligencia artificial de vanguardia para procesar tanto documentos de texto como imágenes escaneadas sin enviar datos a la nube.
 
 ### 📸 Vista General
 ![Vista general del Workflow en n8n](media/n8n_workflow_overview.png)
 
-### 🧩 Desglose de Nodos Principales
-
-#### 1. Lógica de Entrada y OCR
-El sistema detecta si el archivo es un PDF de texto o una imagen escaneada. Si es una imagen, se redirige automáticamente al motor de **OCR (OCR.space)** antes de pasar a la IA.
-
-#### 2. IA: Extracción con Ollama (Llama 3.2)
-Utilizamos un prompt optimizado que obliga a la IA a razonar sobre los campos para evitar errores comunes como el intercambio de fechas y números de factura.
-
-**Configuración del Nodo AI:**
-```json
-{
-  "model": "llama3.2",
-  "prompt": "Extract invoice data... IMPORTANT: 'factura_numero' is the ID, 'factura_fecha' is the date. Do not swap them."
-}
-```
-
-#### 3. El Cerebro: Nodo de Código (Persistencia XML)
-Este nodo es el encargado de leer el Excel existente y añadir la nueva fila sin sobrescribir nada. Utiliza el formato **SpreadsheetML** de Microsoft para mantener estilos profesionales.
-
-![Lógica de inyección de datos](media/n8n_code_node_logic.png)
+### 🧩 Lógica de Procesamiento Dual
+1.  **Rama de Texto (PDF Directo)**: Si el PDF contiene capas de texto, se utiliza el modelo `llama3.2`. Es extremadamente rápido y preciso.
+2.  **Rama de Visión (Escaneos/Imágenes)**: Si el archivo es una imagen o un PDF sin texto, el sistema activa automáticamente **Ollama Vision**.
+    *   **Modelo:** `llama3.2-vision`.
+    *   **Proceso:** Se convierte la imagen a Base64 localmente y la IA la "lee" para extraer el JSON.
 
 ---
 
-## 🛡️ 2. Sistemas de Seguridad (Guardarraíles)
+## 🛠️ 2. Requisitos del Sistema
 
-Para garantizar que los datos sean 100% fiables, hemos implementado una **Heurística de Validación Cruzada** en JavaScript:
+Para que el sistema funcione en modo local, debes tener instalados los siguientes modelos en tu instancia de Ollama:
 
-```javascript
-// Heurística: Si el número parece una fecha y la fecha parece un número, los intercambiamos.
-const isDatePattern = (s) => {
-  const parts = s.split(/[\-\/\.]/);
-  return parts.length === 3 && parts.every(p => /^\d+$/.test(p));
-};
+```bash
+# Para facturas de texto (rápido)
+ollama pull llama3.2
 
-if (isDatePattern(rawNum) && (isOnlyDigits(rawFec) || !rawFec)) {
-  [rawNum, rawFec] = [rawFec, rawNum]; // ¡Corrección automática!
-}
+# Para facturas escaneadas o imágenes (OCR local)
+ollama pull llama3.2-vision
 ```
 
 ---
 
-## 🛠️ 3. Configuración Técnica
+## 🛡️ 3. Sistemas de Seguridad y Validación
 
-### 📂 Estructura de Archivos
-- `README.md`: Este archivo de documentación.
-- `email_pdf_excell.json`: Workflow completo listo para importar en n8n.
-- `tabla_excell_facturas.xls`: Archivo Excel base (formato XML).
-- `media/`: Imágenes y capturas del sistema.
-
-### 🐳 Docker & Permisos
-Es vital configurar el volumen correctamente en n8n para que tenga acceso a la carpeta de facturas:
-- **Ruta Host:** `c:\Users\innovatek\n8n-watch\pdf_excell`
-- **Ruta Contenedor:** `/data/pdf_excell/`
-- **Variable de Entorno:** `N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false`
+El sistema no solo extrae datos, sino que los valida mediante heurística en JavaScript:
+*   **Corrección de Fecha/Número**: Detecta automáticamente si la IA ha intercambiado el ID de la factura con la fecha de emisión.
+*   **Normalización de Fechas**: Convierte cualquier formato a `DD-MM-AAAA`.
+*   **Escapado XML**: Garantiza que caracteres especiales (como el símbolo `&`) no corrompan el archivo Excel.
 
 ---
 
-## ❓ 4. Resolución de Problemas (FAQ)
+## 📂 4. Estructura del Proyecto
+- `email_pdf_excell.json`: Workflow completo (Importar en n8n).
+- `tabla_excell_facturas.xls`: Archivo maestro consolidado.
+- `README.md`: Esta documentación.
+- `media/`: Capturas y diagramas del flujo.
 
-### 🛑 ¿Por qué Excel da error al abrir el archivo?
-Si el archivo se corrompe por un cierre inesperado de n8n, se puede resetear usando el archivo base proporcionado en este repo. Hemos añadido prefijos `ss:` en todo el XML para maximizar la compatibilidad.
+---
 
-### 📅 ¿Qué formato tienen las fechas?
-El sistema normaliza todas las fechas extraídas por la IA al formato **DD-MM-AAAA**, asegurando uniformidad total en el Excel.
+## ❓ 5. FAQ Local
 
-### 🔒 ¿Es seguro el proceso?
-Sí. Al usar **Ollama**, el procesamiento de tus facturas se realiza de forma **100% local** en tu servidor, sin enviar datos privados de tus facturas a nubes externas.
+### 🛑 ¿Por qué tarda más en procesar imágenes?
+Al hacer el OCR localmente, tu ordenador tiene que "ver" la imagen píxel a píxel usando el modelo de visión. El tiempo depende de la potencia de tu CPU/GPU, pero ganas **privacidad total**.
+
+### 🐳 ¿Cómo descargo los modelos en Docker?
+Si usas Docker, ejecuta:
+`docker exec -it ollama ollama pull llama3.2-vision`
 
 ---
 _Desarrollado para Medios y Transportes Goiherri SL_

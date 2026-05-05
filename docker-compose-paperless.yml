@@ -1,0 +1,48 @@
+version: "3.4"
+services:
+  broker:
+    image: docker.io/library/redis:7
+    restart: unless-stopped
+    container_name: paperless_redis
+
+  db:
+    image: docker.io/library/postgres:16
+    restart: unless-stopped
+    container_name: paperless_db
+    volumes:
+      - paperless_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: paperless_password
+
+  webserver:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: unless-stopped
+    container_name: paperless_webserver
+    depends_on:
+      - db
+      - broker
+    ports:
+      - "8010:8000"
+    volumes:
+      - paperless_data:/usr/src/paperless/data
+      - paperless_media:/usr/src/paperless/media
+      - paperless_export:/usr/src/paperless/export
+      - /n8n-watch/pdf_excell/entrada_facturas_pdf:/usr/src/paperless/consume
+    environment:
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBHOST: db
+      PAPERLESS_DBNAME: paperless
+      PAPERLESS_DBUSER: paperless
+      PAPERLESS_DBPASS: paperless_password
+      PAPERLESS_OCR_LANGUAGE: spa
+      PAPERLESS_TIME_ZONE: Europe/Madrid
+      PAPERLESS_OCR_MODE: skip_noarchive
+      PAPERLESS_OCR_CLEAN: clean
+
+volumes:
+  paperless_data:
+  paperless_media:
+  paperless_export:
+  paperless_db_data:
