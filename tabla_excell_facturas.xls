@@ -1,97 +1,66 @@
-<?xml version="1.0"?>
-<?mso-application progid="Excel.Sheet"?>
+<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:o="urn:schemas-microsoft-com:office:office"
- xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:o="urn:schemas-microsoft-com:office:microsoft:office"
+ xmlns:x="urn:schemas-microsoft-com:office:microsoft:excel"
  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
  xmlns:html="http://www.w3.org/TR/REC-html40">
- <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
-  <Version>16.00</Version>
- </DocumentProperties>
- <OfficeDocumentSettings xmlns="urn:schemas-microsoft-com:office:office">
-  <AllowPNG/>
- </OfficeDocumentSettings>
- <ExcelWorkbook xmlns="urn:schemas-microsoft-com:office:excel">
-  <WindowHeight>7545</WindowHeight>
-  <WindowWidth>21360</WindowWidth>
-  <WindowTopX>32767</WindowTopX>
-  <WindowTopY>32767</WindowTopY>
-  <ProtectStructure>False</ProtectStructure>
-  <ProtectWindows>False</ProtectWindows>
- </ExcelWorkbook>
  <Styles>
   <Style ss:ID="Default" ss:Name="Normal">
    <Alignment ss:Vertical="Bottom"/>
    <Borders/>
-   <Font ss:FontName="Aptos Narrow" x:Family="Swiss" ss:Size="11"
-    ss:Color="#000000"/>
+   <Font ss:FontName="Calibri" x:Family="Swiss" ss:Size="11" ss:Color="#000000"/>
    <Interior/>
    <NumberFormat/>
    <Protection/>
   </Style>
-  <Style ss:ID="s62">
-   <Font ss:FontName="Calibri" ss:Size="11"/>
-  </Style>
-  <Style ss:ID="s63">
+  <Style ss:ID="header">
    <Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/>
-   <Font ss:FontName="Calibri" ss:Size="11" ss:Color="#FFFFFF" ss:Bold="1"/>
+   <Font ss:FontName="Calibri" x:Family="Swiss" ss:Size="11" ss:Color="#FFFFFF" ss:Bold="1"/>
    <Interior ss:Color="#1F4E79" ss:Pattern="Solid"/>
   </Style>
  </Styles>
  <Worksheet ss:Name="Facturas">
-  <Table ss:ExpandedColumnCount="19" ss:ExpandedRowCount="1" x:FullColumns="1"
-   x:FullRows="1" ss:StyleID="s62" ss:DefaultColumnWidth="60"
-   ss:DefaultRowHeight="15">
-   <Column ss:StyleID="s62" ss:Width="99.75"/>
-   <Column ss:StyleID="s62" ss:Width="90"/>
-   <Column ss:StyleID="s62" ss:Width="180"/>
-   <Column ss:StyleID="s62" ss:Width="110.25"/>
-   <Column ss:StyleID="s62" ss:Width="249.75"/>
-   <Column ss:StyleID="s62" ss:Width="99.75"/>
-   <Column ss:StyleID="s62" ss:Width="180"/>
-   <Column ss:StyleID="s62" ss:Width="110.25"/>
-   <Column ss:StyleID="s62" ss:Width="249.75"/>
-   <Column ss:StyleID="s62" ss:Width="200.25"/>
-   <Column ss:StyleID="s62" ss:Width="50.25"/>
-   <Column ss:StyleID="s62" ss:Width="80.25" ss:Span="1"/>
-   <Column ss:Index="14" ss:StyleID="s62" ss:Width="50.25"/>
-   <Column ss:StyleID="s62" ss:Width="80.25" ss:Span="2"/>
-   <Column ss:Index="18" ss:StyleID="s62" ss:Width="99.75"/>
-   <Column ss:StyleID="s62" ss:Width="90"/>
+  <Table ss:ExpandedColumnCount="19" ss:DefaultRowHeight="15">
+   <Column ss:Width="100"/>
+   <Column ss:Width="90"/>
+   <Column ss:Width="180"/>
+   <Column ss:Width="110"/>
+   <Column ss:Width="250"/>
+   <Column ss:Width="100"/>
+   <Column ss:Width="180"/>
+   <Column ss:Width="110"/>
+   <Column ss:Width="250"/>
+   <Column ss:Width="200"/>
+   <Column ss:Width="50"/>
+   <Column ss:Width="80"/>
+   <Column ss:Width="80"/>
+   <Column ss:Width="50"/>
+   <Column ss:Width="80"/>
+   <Column ss:Width="80"/>
+   <Column ss:Width="80"/>
+   <Column ss:Width="100"/>
+   <Column ss:Width="90"/>
    <Row ss:AutoFitHeight="0" ss:Height="30">
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Nº Factura</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Fecha</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Empresa</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">CIF Empresa</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Dir Empresa</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Tel</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Cliente</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">CIF Cliente</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Dir Cliente</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Desc</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Cant</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Precio</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Imp</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">%IVA</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Base</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Cuota</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Total</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Pago</Data></Cell>
-    <Cell ss:StyleID="s63"><Data ss:Type="String">Venc</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Nº Factura</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Fecha</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Empresa</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">CIF Empresa</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Dir Empresa</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Tel</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Cliente</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">CIF Cliente</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Dir Cliente</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Desc</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Cant</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Precio</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Imp</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">%IVA</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Base</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Cuota</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Total</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Pago</Data></Cell>
+    <Cell ss:StyleID="header"><Data ss:Type="String">Venc</Data></Cell>
    </Row>
-  <Row><Cell><Data ss:Type="String">24-11-2012</Data></Cell><Cell><Data ss:Type="String">98765</Data></Cell><Cell><Data ss:Type="String">MI LOCALIDAD</Data></Cell><Cell><Data ss:Type="String">X0000000T</Data></Cell><Cell><Data ss:Type="String">Calle y número de mi empresa, 99999, MI PROVINCIA, Telf.: 999-99.99.99 Fax: 999-88.88.88</Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String">GARCIA PROBERO</Data></Cell><Cell><Data ss:Type="String">77777777B</Data></Cell><Cell><Data ss:Type="String">CL GRAN VIA 5 -Dirección Fiscal PALMA DE MALLORCA 07610 BALEARES</Data></Cell><Cell><Data ss:Type="String">ARTICULO ESPECÍFICO CON EL NOMBRE QUE SEA | OTRO ARTICULO, AQUÍ PONDRÁ SU DESCRIPCION | Exento I.V.A.</Data></Cell><Cell><Data ss:Type="Number">1</Data></Cell><Cell><Data ss:Type="Number">1.026</Data></Cell><Cell><Data ss:Type="Number">1.026</Data></Cell><Cell><Data ss:Type="Number">21</Data></Cell><Cell><Data ss:Type="Number">1.026</Data></Cell><Cell><Data ss:Type="Number">215</Data></Cell><Cell><Data ss:Type="Number">1.241</Data></Cell><Cell><Data ss:Type="String">CONTADO Plazo devolución: 30 días</Data></Cell><Cell><Data ss:Type="String"></Data></Cell></Row>
-</Table>
-  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
-   <Selected/>
-   <Panes>
-    <Pane>
-     <Number>3</Number>
-     <ActiveRow>10</ActiveRow>
-     <ActiveCol>4</ActiveCol>
-    </Pane>
-   </Panes>
-   <ProtectObjects>False</ProtectObjects>
-   <ProtectScenarios>False</ProtectScenarios>
-  </WorksheetOptions>
+  </Table>
  </Worksheet>
 </Workbook>
