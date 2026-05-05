@@ -1,63 +1,75 @@
-# 🚀 Automatización de Facturas 100% Local (n8n + Ollama Vision)
+# 🚀 Automatización de Facturas 100% Local y Privada (n8n + AI)
 
-Este proyecto es una solución **Air-Gapped** (sin internet) para la extracción y consolidación de facturas. A diferencia de otras soluciones, todo el procesamiento de datos y el OCR se realizan de forma privada en tu propio servidor.
+Este proyecto implementa un pipeline de procesamiento de documentos **completamente local**, eliminando la dependencia de APIs externas (como OCR.space o ChatGPT). Garantiza la **soberanía total de los datos** y la privacidad de la información financiera.
+
+![Workflow Overview](file:///C:/Users/innovatek/.gemini/antigravity/brain/6772905e-33bb-4f6f-9436-a3a9a279ab8d/n8n_workflow_overview_1777962164304.png)
+
+## 🏗️ Arquitectura del Sistema
+
+La solución se basa en una arquitectura de microservicios orquestada por **Docker**, compuesta por cuatro pilares fundamentales:
+
+### 1. n8n (Orquestador)
+Es el cerebro del flujo. Se encarga de:
+- **Vigilar carpetas locales**: Usa el nodo `Local File Trigger` para detectar nuevos PDFs instantáneamente.
+- **Lógica de Decisión**: Clasifica si un PDF tiene texto nativo o es una imagen escaneada que requiere OCR.
+- **Gestión de Datos**: Conecta la salida de la IA con la persistencia en archivos Excel.
+
+### 2. Paperless-ngx (Motor de OCR Local)
+Actúa como nuestro motor de visión artificial. 
+- **Tecnología**: Utiliza **Tesseract OCR** optimizado.
+- **Función**: Cuando n8n detecta una factura que es una "imagen" (sin texto seleccionable), la envía a Paperless. Este extrae cada carácter localmente y devuelve el texto plano a n8n.
+- **Estado**: Se ejecuta en el contenedor `paperless_webserver` (puerto 8000).
+
+### 3. Ollama (Modelo de Lenguaje Llama 3.2)
+Es la inteligencia que "entiende" la factura.
+- **Modelo**: `llama3.2` (ligero y extremadamente rápido).
+- **Función**: Recibe el texto extraído (ya sea por OCR o nativo) y lo transforma en un objeto JSON estructurado con campos como `empresa_nombre`, `total_factura`, `CIF`, etc.
+- **Ventaja**: Al ser local, la velocidad de respuesta es constante y no tiene costes por uso.
+
+### 4. Motor de Excel (XML Inyectado)
+En lugar de usar bibliotecas pesadas, el flujo inyecta directamente filas en formato **XML Spreadsheet 2003**.
+- **Robustez**: Permite añadir líneas a archivos `.xls` existentes sin corromperlos.
+- **Personalización**: El código JavaScript incluye guardarraíles para corregir errores comunes de la IA (como confundir fechas con números de factura).
 
 ---
 
-## 🏗️ 1. Arquitectura de Privacidad Total
+## 🛠️ Detalle del Código y Nodos Críticos
 
-El workflow (`email_pdf_excell.json`) utiliza inteligencia artificial de vanguardia para procesar tanto documentos de texto como imágenes escaneadas sin enviar datos a la nube.
+### Nodo de Inyección Excel (JavaScript)
+Este es el corazón lógico del post-procesamiento. Se encarga de sanitizar los datos de la IA antes de guardarlos.
 
-### 📸 Vista General
-![Vista general del Workflow en n8n](media/n8n_workflow_overview.png)
+![Lógica del Código](file:///C:/Users/innovatek/.gemini/antigravity/brain/6772905e-33bb-4f6f-9436-a3a9a279ab8d/n8n_code_node_logic_1777962186497.png)
 
-### 🧩 Lógica de Procesamiento Dual
-1.  **Rama de Texto (PDF Directo)**: Si el PDF contiene capas de texto, se utiliza el modelo `llama3.2`. Es extremadamente rápido y preciso.
-2.  **Rama de Visión (Escaneos/Imágenes)**: Si el archivo es una imagen o un PDF sin texto, el sistema activa automáticamente **Ollama Vision**.
-    *   **Modelo:** `llama3.2-vision`.
-    *   **Proceso:** Se convierte la imagen a Base64 localmente y la IA la "lee" para extraer el JSON.
+**Funciones clave del código:**
+- `esc()`: Escapa caracteres especiales de XML para evitar que el Excel se rompa.
+- `fD()`: Normaliza formatos de fecha (YYYY-MM-DD a DD-MM-YYYY).
+- **Auto-corrección**: Si la IA detecta una fecha en el campo de "Número de Factura", el código lo detecta y los intercambia automáticamente.
 
 ---
 
-## 🛠️ 2. Requisitos del Sistema
+## 🚦 Guía de Inicio Rápido
 
-Para que el sistema funcione en modo local, debes tener instalados los siguientes modelos en tu instancia de Ollama:
-
+### 1. Levantar la Infraestructura
+Asegúrate de que todos los contenedores están funcionando:
 ```bash
-# Para facturas de texto (rápido)
-ollama pull llama3.2
-
-# Para facturas escaneadas o imágenes (OCR local)
-ollama pull llama3.2-vision
+docker compose -f docker-compose-paperless.yml up -d
 ```
 
----
+Verifica el estado con `docker ps`:
+![Docker Status](file:///C:/Users/innovatek/.gemini/antigravity/brain/6772905e-33bb-4f6f-9436-a3a9a279ab8d/media__1777968874591.png)
 
-## 🛡️ 3. Sistemas de Seguridad y Validación
-
-El sistema no solo extrae datos, sino que los valida mediante heurística en JavaScript:
-*   **Corrección de Fecha/Número**: Detecta automáticamente si la IA ha intercambiado el ID de la factura con la fecha de emisión.
-*   **Normalización de Fechas**: Convierte cualquier formato a `DD-MM-AAAA`.
-*   **Escapado XML**: Garantiza que caracteres especiales (como el símbolo `&`) no corrompan el archivo Excel.
-
----
-
-## 📂 4. Estructura del Proyecto
-- `email_pdf_excell.json`: Workflow completo (Importar en n8n).
-- `tabla_excell_facturas.xls`: Archivo maestro consolidado.
-- `README.md`: Esta documentación.
-- `media/`: Capturas y diagramas del flujo.
+### 2. Configurar el Workflow
+1. Importa el archivo `email_pdf_excell.json` en n8n.
+2. Asegúrate de que las rutas de las carpetas coinciden con tus volúmenes de Docker.
+3. El nodo **Ollama** debe apuntar a `http://ollama:11434`.
 
 ---
 
-## ❓ 5. FAQ Local
+## 🔒 Seguridad y Privacidad
 
-### 🛑 ¿Por qué tarda más en procesar imágenes?
-Al hacer el OCR localmente, tu ordenador tiene que "ver" la imagen píxel a píxel usando el modelo de visión. El tiempo depende de la potencia de tu CPU/GPU, pero ganas **privacidad total**.
-
-### 🐳 ¿Cómo descargo los modelos en Docker?
-Si usas Docker, ejecuta:
-`docker exec -it ollama ollama pull llama3.2-vision`
+- **0% Cloud**: Ninguna factura viaja a servidores de terceros.
+- **Procesamiento Offline**: Todo ocurre en la red local (`127.0.0.1`).
+- **Persistencia Segura**: Los documentos procesados se quedan en tu sistema de archivos local, bajo tu control total.
 
 ---
-_Desarrollado para Medios y Transportes Goiherri SL_
+*Desarrollado para Medios y Transportes Goiherri SL - 2026*
