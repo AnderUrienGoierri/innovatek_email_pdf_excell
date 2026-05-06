@@ -1,10 +1,7 @@
-version: '3'
 services:
   tesseract-api:
-    image: jitesoft/tesseract-api
+    image: sidereal/tesseract-api
     container_name: tesseract_ocr
     restart: unless-stopped
     ports:
-      - "5005:8080"
-    environment:
-      - TESS_LANG=spa
+      - "5005:5000"
