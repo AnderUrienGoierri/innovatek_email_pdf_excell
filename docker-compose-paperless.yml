@@ -40,6 +40,7 @@ services:
       PAPERLESS_TIME_ZONE: Europe/Madrid
       PAPERLESS_OCR_MODE: skip_noarchive
       PAPERLESS_OCR_CLEAN: clean
+      PAPERLESS_CONSUMER_POLLING: 10
 
 volumes:
   paperless_data:
