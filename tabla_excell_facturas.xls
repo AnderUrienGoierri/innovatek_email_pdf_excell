@@ -1,1 +1,25 @@
-<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Styles><Style ss:ID="Default"><Font ss:FontName="Calibri" ss:Size="11"/></Style><Style ss:ID="header"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:FontName="Calibri" ss:Size="11"/><Interior ss:Color="#1F4E79" ss:Pattern="Solid"/></Style></Styles><Worksheet ss:Name="Facturas"><Table><ss:Row ss:Height="30"><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">N Factura</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">Fecha</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">Empresa</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">CIF/NIF Empresa</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">Dir Empresa</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">Tel Empresa</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">Cliente</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">CIF/NIF Cliente</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">Dir Cliente</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">Base Imponible</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">IVA</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">Total</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">IBAN</ss:Data></ss:Cell><ss:Cell ss:StyleID="header"><ss:Data ss:Type="String">Método Pago</ss:Data></ss:Cell></ss:Row><ss:Row><ss:Cell><ss:Data ss:Type="String">02/26-05367</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="String">28/02/2026</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="String">ONTINET.COM S.L.U.</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="String">B96840467</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="String">c/ Martinez Valls, 56 bajos - 46870 Ontinyent - Valencia</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="String">96 291 33 48</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="String">INNOVATEK IT CONSULTING C.B.</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="String">E20882726</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="String">INNOVATEK -ZALDIZURRETA 19 AZPIA, 20200 BEASAIN (Gipuzkoa), España</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="Number">34.71</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="Number">7.29</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="Number">42</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="String">ESPCESMM 1271</ss:Data></ss:Cell><ss:Cell><ss:Data ss:Type="String">Transferencia</ss:Data></ss:Cell></ss:Row></Table></Worksheet></Workbook>
+<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Font ss:FontName="Calibri" ss:Size="11"/>
+  </Style>
+  <Style ss:ID="hdr">
+   <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#4472C4" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="num">
+   <NumberFormat ss:Format="#,##0.00"/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="Facturas">
+  <Table>
+   <Row><Cell ss:StyleID="hdr"><Data ss:Type="String">Fecha Proceso</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">Nombre Archivo</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">Número Factura</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">Fecha Factura</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">Emisor</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">CIF Emisor</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">Cliente</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">CIF Cliente</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">Concepto</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">Base Imponible</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">% IVA</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">Cuota IVA</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">Total Factura</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">Forma Pago</Data></Cell><Cell ss:StyleID="hdr"><Data ss:Type="String">IBAN</Data></Cell></Row>
+  </Table>
+ </Worksheet>
+</Workbook>

@@ -29,18 +29,45 @@ services:
       - paperless_data:/usr/src/paperless/data
       - paperless_media:/usr/src/paperless/media
       - paperless_export:/usr/src/paperless/export
-      - /n8n-watch/pdf_excell/entrada_facturas_pdf:/usr/src/paperless/consume
+      - ./entrada_facturas_pdf:/usr/src/paperless/consume
+      # Script de post-proceso
+      - ./scripts:/scripts
+      # Directorio raíz del proyecto (acceso al XLS)
+      - .:/data
     environment:
       PAPERLESS_REDIS: redis://broker:6379
       PAPERLESS_DBHOST: db
       PAPERLESS_DBNAME: paperless
       PAPERLESS_DBUSER: paperless
       PAPERLESS_DBPASS: paperless_password
+      PAPERLESS_SECRET_KEY: "cambia-esta-clave-secreta-por-una-aleatoria-larga"
+
+      # OCR en español
       PAPERLESS_OCR_LANGUAGE: spa
       PAPERLESS_TIME_ZONE: Europe/Madrid
       PAPERLESS_OCR_MODE: skip_noarchive
       PAPERLESS_OCR_CLEAN: clean
-      PAPERLESS_CONSUMER_POLLING: 10
+      PAPERLESS_CONSUMER_POLLING: 30
+
+      # Usuario administrador (se crea en el primer arranque)
+      PAPERLESS_ADMIN_USER: admin
+      PAPERLESS_ADMIN_PASSWORD: admin123
+      PAPERLESS_ADMIN_MAIL: anurte@gmail.com
+
+      # ── Post-consume script ───────────────────────────────────────
+      PAPERLESS_POST_CONSUME_SCRIPT: /scripts/post_consume.py
+
+      # URL interna de Ollama (host Windows desde el contenedor)
+      OLLAMA_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: llama3.2
+
+      # Ruta del Excel dentro del contenedor (mapeado desde ./)
+      EXCEL_PATH: /data/tabla_excell_facturas.xls
+
+    # En Linux añade el alias host.docker.internal → host gateway.
+    # En Docker Desktop para Windows esto ya está disponible de forma nativa.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   paperless_data:

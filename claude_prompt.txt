@@ -1,0 +1,19 @@
+ Trabaja en el directorio C:\Users\innovatek\n8n-watch\pdf_excell.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             Objetivo: Descartar n8n y construir un flujo de automatización 100% basado en Paperless-ngx, Ollama local y un script de Python (Post-consume script).                                                                                                                       
+  El ciclo de vida del documento será el siguiente:
+  1. Paperless-ngx se conecta vía IMAP a Gmail (anurte@gmail.com / clave de aplicación: "agsz dzcf nima npiy") y descarga automáticamente correos con facturas adjuntas (pdf, jpeg, jpg, png).
+  2. Paperless consume el documento y realiza su OCR nativo.
+  3. Al terminar, Paperless dispara automáticamente un "Post-consume script" escrito en Python.
+  4. Este script de Python recoge el texto OCR del documento, hace una petición local a Ollama (modelo Llama 3.2) con un prompt estricto para extraer todos los campos de la factura (Emisor, Cliente, CIFs, Base, IVA, Total, etc.).
+  5. El script toma el JSON devuelto por Ollama y añade una nueva fila al archivo "tabla_excell_facturas.xls" (usando el formato nativo XML Spreadsheet 2003 que veníamos utilizando, comprobando si la factura ya existe para evitar duplicados).
+
+  Tareas que debes ejecutar y resolver:
+  1. Modificar el archivo `docker-compose-paperless.yml` para habilitar la ejecución de scripts. Debes mapear un volumen local (por ejemplo `./scripts:/scripts`) e inyectar la variable de entorno `PAPERLESS_POST_CONSUME_SCRIPT` apuntando al script de Python.
+  2. Programar el Post-consume script en Python. El script debe:
+     - Recibir las variables de entorno que Paperless le inyecta (DOCUMENT_ID, DOCUMENT_FILE_NAME, etc.).
+     - Utilizar la API REST de Paperless local (http://host.docker.internal:8010/api/documents/ o localmente) para obtener el texto extraído (content).
+     - Enviar ese texto a Ollama (`http://host.docker.internal:11434/api/generate`) pidiendo un JSON.
+     - Leer el archivo `tabla_excell_facturas.xls` (que está mapeado en los volúmenes o accesible localmente), añadir el XML correspondiente a la nueva fila y guardar.
+  3. Generar un breve manual paso a paso (markdown) para mí, explicándome exclusivamente cómo configurar la cuenta de Gmail en la interfaz web de Paperless (Dashboard -> Mail Accounts y Mail Rules) introduciendo mis credenciales (anurte@gmail.com / agsz dzcf nima npiy)
+  para que el ciclo se cierre.
+
+  Dame el script de Python, actualiza el Docker Compose y facilítame las instrucciones de la interfaz de Paperless.
