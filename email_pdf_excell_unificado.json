@@ -13,7 +13,10 @@
       },
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [ 0, 0 ],
+      "position": [
+        0,
+        0
+      ],
       "name": "Cada Minuto"
     },
     {
@@ -22,7 +25,10 @@
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
-      "position": [ 200, 0 ],
+      "position": [
+        200,
+        0
+      ],
       "name": "Buscar PDFs",
       "continueOnFail": true
     },
@@ -39,7 +45,10 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [ 400, 0 ],
+      "position": [
+        400,
+        0
+      ],
       "name": "Hay Archivos?"
     },
     {
@@ -48,14 +57,20 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [ 600, -100 ],
+      "position": [
+        600,
+        -100
+      ],
       "name": "Separar Archivos"
     },
     {
       "parameters": {},
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
-      "position": [ 800, -100 ],
+      "position": [
+        800,
+        -100
+      ],
       "name": "Bucle"
     },
     {
@@ -65,7 +80,10 @@
       },
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
-      "position": [ 1000, -100 ],
+      "position": [
+        1000,
+        -100
+      ],
       "name": "Leer PDF"
     },
     {
@@ -75,7 +93,10 @@
       },
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1,
-      "position": [ 1200, -100 ],
+      "position": [
+        1200,
+        -100
+      ],
       "name": "Texto",
       "continueOnFail": true
     },
@@ -92,7 +113,10 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [ 1400, -100 ],
+      "position": [
+        1400,
+        -100
+      ],
       "name": "¿Vacío?"
     },
     {
@@ -102,7 +126,10 @@
       },
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
-      "position": [ 1500, 100 ],
+      "position": [
+        1500,
+        100
+      ],
       "name": "Releer"
     },
     {
@@ -139,7 +166,10 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [ 1700, 100 ],
+      "position": [
+        1700,
+        100
+      ],
       "name": "OCR"
     },
     {
@@ -149,7 +179,10 @@
       },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1,
-      "position": [ 1900, 100 ],
+      "position": [
+        1900,
+        100
+      ],
       "name": "Espera"
     },
     {
@@ -181,7 +214,10 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [ 2100, 100 ],
+      "position": [
+        2100,
+        100
+      ],
       "name": "Resultado"
     },
     {
@@ -193,7 +229,10 @@
       },
       "name": "Webhook Paperless",
       "type": "n8n-nodes-base.webhook",
-      "position": [ 2100, 300 ]
+      "position": [
+        2100,
+        300
+      ]
     },
     {
       "parameters": {
@@ -224,22 +263,28 @@
       },
       "name": "Obtener OCR Paperless Webhook",
       "type": "n8n-nodes-base.httpRequest",
-      "position": [ 2300, 300 ]
+      "position": [
+        2300,
+        300
+      ]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://host.docker.internal:11434/api/generate",
+        "url": "http://192.168.5.152:11434/api/generate",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'llama3.2', format: 'json', prompt: 'Analyze the invoice text and extract data into a JSON object. STRICT RULES:\\n1. The CLIENT/BUYER is ALWAYS related to \\'Innovatek\\', \\'Alejandro Calvo\\', or \\'YUNIQ\\'. The PROVIDER/SENDER (empresa_nombre) MUST NOT be these names.\\n2. If a field is missing, output \\'No disponible\\'.\\n3. CRITICAL: Preserve exactly all Spanish accents (á, é, í, ó, ú, ñ) and exact legal suffixes (e.g., S.L.U., S.A., S.L.) in company names.\\n4. CRITICAL: The PROVIDER/SENDER name is located at the TOP/HEADER of the document. NEVER extract company names from the itemized invoice lines.\\n5. factura_numero: The FULL invoice number including all prefixes, slashes, and dashes (e.g. FACT-1234/AB). CRITICAL: DO NOT invent the number, extract it EXACTLY as it appears. Do NOT shorten it.\\n6. factura_fecha: Issue date.\\n7. empresa_nombre: PROVIDER/SENDER name. STRICT: DO NOT put an address here, ONLY the company name.\\n8. empresa_cif: PROVIDER VAT.\\n9. empresa_direccion: PROVIDER address.\\n10. empresa_telefono: PROVIDER phone.\\n11. cliente_nombre: CLIENT/BUYER name.\\n12. cliente_cif: CLIENT VAT.\\n13. cliente_direccion: CLIENT address.\\n14. base_imponible_total: Subtotal before taxes (number only).\\n15. iva_total: Total tax amount (number only).\\n16. total_factura: Final total (number only). Ensure Base + IVA = Total.\\n17. cuenta_bancaria_iban: IBAN.\\n18. metodo_pago: Payment method. MUST be exactly ONE short word (e.g., Transferencia, Contado, Tarjeta, Recibo, Domiciliación, Efectivo). DO NOT write sentences.\\nReturn ONLY valid JSON. Text: ' + (($json.results && $json.results[0]) ? $json.results[0].content : ($json.text || '')).substring(0, 4000), stream: false }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: 'qwen2.5:14b', format: 'json', options: { temperature: 0 }, system: 'Eres un sistema experto en extracción de datos de facturas españolas. Devuelves EXCLUSIVAMENTE un objeto JSON válido. Sin explicaciones, sin texto adicional, sin markdown, sin bloques de código.\\n\\nDATOS FIJOS DEL RECEPTOR (no cambian nunca):\\nreceptor_nombre = \"INNOVATEK\"\\nreceptor_cif = \"E20882726\"\\nreceptor_direccion = \"Zaldizurreta 19, Bajo, Beasain, 20200, GIPUZKOA\"\\n\\nEMISOR vs RECEPTOR:\\nINNOVATEK (CIF E20882726) es SIEMPRE el receptor/cliente. NUNCA va en emisor_*. El emisor es la OTRA empresa, la que emite la factura, normalmente identificada en la cabecera con su logotipo o razón social. Si en el texto aparecen \"INNOVATEK\", \"E20882726\", \"Zaldizurreta\", \"Beasain\" o \"GIPUZKOA\", esos datos NO van en emisor_*.\\n\\nFORMATO DE FECHAS: SIEMPRE DD/MM/YYYY con ceros a la izquierda. Convierte: 2026-03-05 -> 05/03/2026, 5/3/26 -> 05/03/2026, \"5 de marzo de 2026\" -> 05/03/2026, \"05.03.2026\" -> 05/03/2026.\\n\\nFORMATO DE NÚMEROS: SIEMPRE punto decimal, sin separador de miles, sin símbolo €. Convierte: 1.234,56 -> 1234.56; 1,234.56 -> 1234.56; \"120,50 €\" -> 120.50.\\n\\nREGLAS POR CAMPO:\\n- numero_factura: cadena EXACTA con prefijos, letras, barras y guiones (ej. \"FRA-2026/A0125\", \"F/25-001\"). No la acortes ni inventes.\\n- fecha_factura: fecha de emisión.\\n- fecha_vencimiento: fecha de vencimiento si aparece, si no null.\\n- codigo_cliente: número/código de cliente que asigna el emisor (ej. \"Cliente: 12345\"). Si no, null.\\n- emisor_nombre: razón social del proveedor con tildes (á é í ó ú ñ) y sufijo legal EXACTO (S.L., S.A., S.L.U., S.C., C.B., S.Coop.).\\n- emisor_cif: CIF/NIF del emisor. NUNCA E20882726.\\n- base_imponible: base imponible TOTAL de la factura, no líneas individuales.\\n- porcentaje_iva: tipo de IVA como número, sin %. Valores típicos: 21, 10, 4, 0.\\n- cuota_iva: cuota TOTAL de IVA.\\n- total_factura: total final tal y como aparece impreso en la factura.\\n- forma_pago: UNA sola palabra: Transferencia, Recibo, Domiciliación, Contado, Tarjeta, Efectivo, Cheque, Confirming, Pagaré. Nunca frases.\\n- iban: IBAN con código de país, sin espacios (ej. \"ES7621000418401234567891\"). Si no aparece, null.\\n\\nCOHERENCIA: si base_imponible + cuota_iva no coincide con total_factura, prioriza el total_factura impreso. NO recalcules.\\n\\nCAMPOS AUSENTES: usa null literal (no la cadena \"null\", no \"N/A\", no \"-\").\\n\\nESQUEMA OBLIGATORIO (exactamente estas 15 claves):\\n{\"fecha_factura\":\"DD/MM/YYYY\",\"numero_factura\":\"...\",\"fecha_vencimiento\":\"DD/MM/YYYY o null\",\"codigo_cliente\":\"... o null\",\"emisor_nombre\":\"...\",\"emisor_cif\":\"...\",\"base_imponible\":0.00,\"porcentaje_iva\":0,\"cuota_iva\":0.00,\"total_factura\":0.00,\"forma_pago\":\"...\",\"iban\":\"... o null\",\"receptor_nombre\":\"INNOVATEK\",\"receptor_cif\":\"E20882726\",\"receptor_direccion\":\"Zaldizurreta 19, Bajo, Beasain, 20200, GIPUZKOA\"}\\n\\nDevuelve SOLO el objeto JSON.', prompt: 'Texto OCR de la factura:\\n\\n' + (($json.results && $json.results[0]) ? $json.results[0].content : ($json.text || '')).substring(0, 4000) + '\\n\\nDevuelve UNICAMENTE el objeto JSON con las 15 claves indicadas.', stream: false }) }}",
         "options": {
           "timeout": 3600000
         }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [ 2400, 0 ],
+      "position": [
+        2400,
+        0
+      ],
       "name": "Ollama"
     },
     {
@@ -250,16 +295,22 @@
       },
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
-      "position": [ 2600, 0 ],
+      "position": [
+        2600,
+        0
+      ],
       "name": "Excel"
     },
     {
       "parameters": {
-        "jsCode": "const ai = $('Ollama').first().json.response;\nlet d;\ntry {\n  let raw = String(ai || '');\n  raw = raw.replace(/```(?:json)?\\s*/gi, '').replace(/```\\s*/g, '');\n  const m = raw.match(/\\{[\\s\\S]*\\}/);\n  if (!m) throw new Error('Sin JSON en respuesta');\n  d = JSON.parse(m[0]);\n} catch(e) {\n  throw new Error('JSON inválido de Ollama: ' + e.message + ' | Respuesta: ' + String(ai).substring(0, 200));\n}\nconst gv = (v) => {\n  if (v === null || v === undefined) return 'No disponible';\n  const s = String(v).trim();\n  if (!s || ['null','none','n/a','-','undefined'].includes(s.toLowerCase())) return 'No disponible';\n  return s;\n};\nlet rN = gv(d.factura_numero), rF = gv(d.factura_fecha);\nconst fD = (s) => {\n  if (s === 'No disponible') return s;\n  const clean = s.replace(/[^0-9\\-\\/\\.]/g, '');\n  const p = clean.split(/[\\-\\/\\.]/); if (p.length < 3) return s;\n  let y, mo, dd;\n  if (p[0].length === 4) { y=p[0]; mo=p[1]; dd=p[2]; } else { dd=p[0]; mo=p[1]; y=p[2]; }\n  if (y.length === 2) y = '20' + y;\n  return dd.padStart(2,'0') + '/' + mo.padStart(2,'0') + '/' + y;\n};\nlet eN=gv(d.empresa_nombre), eC=gv(d.empresa_cif), eD=gv(d.empresa_direccion), eT=gv(d.empresa_telefono);\nlet cN=gv(d.cliente_nombre), cC=gv(d.cliente_cif), cDir=gv(d.cliente_direccion);\nconst isClient = (n) => /innovatek|alejandro|calvo|yuniq/i.test(String(n || ''));\nif (isClient(eN) && !isClient(cN)) { let t; t=eN; eN=cN; cN=t; t=eC; eC=cC; cC=t; t=eD; eD=cDir; cDir=t; }\nif (isClient(cN)) { cN='INNOVATEK IT CONSULTING C.B.'; cC='E20882726'; cDir='INNOVATEK -ZALDIZURRETA 19 AZPIA, 20200 BEASAIN (Gipuzkoa), España'; }\nif (/ontinet/i.test(eN)) eN='ONTINET.COM S.L.U.';\nconst toNum = (v) => parseFloat(String(v || '0').replace(',','.')) || 0;\nlet base=toNum(d.base_imponible_total), iva=toNum(d.iva_total), total=toNum(d.total_factura);\nif (total === 0 && (base > 0 || iva > 0)) total = base + iva;\nelse if (base > 0 && Math.abs((base+iva)-total) > 0.05) total = base + iva;\nconst esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');\nconst q = String.fromCharCode(34);\nconst c = (t,v) => '<ss:Cell><ss:Data ss:Type='+q+t+q+'>'+v+'</ss:Data></ss:Cell>';\nlet row = '<ss:Row>';\nrow += c('String',esc(rN)) + c('String',esc(fD(rF))) + c('String',esc(eN)) + c('String',esc(eC)) + c('String',esc(eD)) + c('String',esc(eT)) + c('String',esc(cN)) + c('String',esc(cC)) + c('String',esc(cDir)) + c('Number',String(base)) + c('Number',String(iva)) + c('Number',String(total)) + c('String',esc(gv(d.cuenta_bancaria_iban))) + c('String',esc(gv(d.metodo_pago)));\nrow += '</ss:Row>';\nlet rutaArchivo = 'webhook';\ntry { const p = $item(0).$node['Separar Archivos'].json.path; if(p) rutaArchivo=p; } catch(e){}\ntry { const p = $item(0).$node['Extraer Adjuntos Email'].json.savePath; if(p && rutaArchivo==='webhook') rutaArchivo=p; } catch(e){}\nlet xml = '';\ntry { const b = await this.helpers.getBinaryDataBuffer(0,'data'); if(b && b.length>0) xml = b.toString('utf-8'); } catch(e){}\nif (rN !== 'No disponible' && xml && xml.includes('>'+esc(rN)+'</ss:Data>')) {\n  return [{ json: { success: false, reason: 'Duplicate', invoiceNum: rN, file: rutaArchivo } }];\n}\nconst re = /(<\\/(?:ss:)?Table\\s*>)/i;\nif (xml && re.test(xml)) {\n  xml = xml.replace(re, row + '\\n$1');\n} else {\n  const hc = (t) => '<ss:Cell ss:StyleID='+q+'header'+q+'><ss:Data ss:Type='+q+'String'+q+'>'+t+'</ss:Data></ss:Cell>';\n  const hdr = '<ss:Row ss:Height='+q+'30'+q+'>'+hc('N Factura')+hc('Fecha')+hc('Empresa')+hc('CIF/NIF Empresa')+hc('Dir Empresa')+hc('Tel Empresa')+hc('Cliente')+hc('CIF/NIF Cliente')+hc('Dir Cliente')+hc('Base Imponible')+hc('IVA')+hc('Total')+hc('IBAN')+hc('Método Pago')+'</ss:Row>';\n  xml = '<?xml version='+q+'1.0'+q+' encoding='+q+'UTF-8'+q+'?><?mso-application progid='+q+'Excel.Sheet'+q+'?><Workbook xmlns='+q+'urn:schemas-microsoft-com:office:spreadsheet'+q+' xmlns:ss='+q+'urn:schemas-microsoft-com:office:spreadsheet'+q+'><Styles><Style ss:ID='+q+'Default'+q+'><Font ss:FontName='+q+'Calibri'+q+' ss:Size='+q+'11'+q+'/></Style><Style ss:ID='+q+'header'+q+'><Font ss:Bold='+q+'1'+q+' ss:Color='+q+'#FFFFFF'+q+' ss:FontName='+q+'Calibri'+q+' ss:Size='+q+'11'+q+'/><Interior ss:Color='+q+'#1F4E79'+q+' ss:Pattern='+q+'Solid'+q+'/></Style></Styles><Worksheet ss:Name='+q+'Facturas'+q+'><Table>'+hdr+row+'</Table></Worksheet></Workbook>';\n}\nreturn [{ json: { success: true, file: rutaArchivo }, binary: { data: { data: Buffer.from(xml,'utf-8').toString('base64'), mimeType:'application/vnd.ms-excel', fileName:'tabla_excell_facturas.xls', fileExtension:'xls' } } }];"
+        "jsCode": "const ai = $('Ollama').first().json.response;\nlet d;\ntry {\n  let raw = String(ai || '');\n  raw = raw.replace(/```(?:json)?\\s*/gi, '').replace(/```\\s*/g, '');\n  const m = raw.match(/\\{[\\s\\S]*\\}/);\n  if (!m) throw new Error('Sin JSON en respuesta');\n  d = JSON.parse(m[0]);\n} catch (e) {\n  throw new Error('JSON invalido de Ollama: ' + e.message + ' | Respuesta: ' + String(ai).substring(0, 200));\n}\nconst gv = (v) => {\n  if (v === null || v === undefined) return 'No disponible';\n  const s = String(v).trim();\n  if (!s || ['null','none','n/a','-','undefined'].includes(s.toLowerCase())) return 'No disponible';\n  return s;\n};\nconst fD = (s) => {\n  if (s === 'No disponible') return s;\n  const clean = s.replace(/[^0-9\\-\\/\\.]/g, '');\n  const p = clean.split(/[\\-\\/\\.]/);\n  if (p.length < 3) return s;\n  let y, mo, dd;\n  if (p[0].length === 4) { y=p[0]; mo=p[1]; dd=p[2]; } else { dd=p[0]; mo=p[1]; y=p[2]; }\n  if (y.length === 2) y = '20' + y;\n  return dd.padStart(2,'0') + '/' + mo.padStart(2,'0') + '/' + y;\n};\nconst toNum = (v) => {\n  if (v === null || v === undefined) return 0;\n  let s = String(v).replace(/[€$\\s]/g,'').trim();\n  if (!s) return 0;\n  if (s.includes(',') && s.includes('.')) { s = s.replace(/\\./g,'').replace(',', '.'); }\n  else if (s.includes(',')) { s = s.replace(',', '.'); }\n  const n = parseFloat(s);\n  return isNaN(n) ? 0 : n;\n};\nlet numFactura = gv(d.numero_factura);\nlet fechaFactura = fD(gv(d.fecha_factura));\nlet fechaVenc = fD(gv(d.fecha_vencimiento));\nlet codCliente = gv(d.codigo_cliente);\nlet emisorNombre = gv(d.emisor_nombre);\nlet emisorCif = gv(d.emisor_cif);\nlet receptorNombre = (gv(d.receptor_nombre) === 'No disponible') ? 'INNOVATEK' : gv(d.receptor_nombre);\nlet receptorCif = (gv(d.receptor_cif) === 'No disponible') ? 'E20882726' : gv(d.receptor_cif);\nlet receptorDir = (gv(d.receptor_direccion) === 'No disponible') ? 'Zaldizurreta 19, Bajo, Beasain, 20200, GIPUZKOA' : gv(d.receptor_direccion);\nif (/innovatek|E20882726/i.test(emisorNombre + ' ' + emisorCif)) { emisorNombre='No disponible'; emisorCif='No disponible'; }\nlet base = toNum(d.base_imponible);\nlet pctIva = toNum(d.porcentaje_iva);\nlet cuotaIva = toNum(d.cuota_iva);\nlet total = toNum(d.total_factura);\nif (total === 0 && (base > 0 || cuotaIva > 0)) total = base + cuotaIva;\nlet formaPago = gv(d.forma_pago);\nlet iban = gv(d.iban);\nif (iban !== 'No disponible') iban = iban.replace(/\\s/g,'').toUpperCase();\nconst esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');\nconst q = String.fromCharCode(34);\nconst c = (t,v) => '<ss:Cell><ss:Data ss:Type='+q+t+q+'>'+v+'</ss:Data></ss:Cell>';\nlet row = '<ss:Row>';\nrow += c('String', esc(numFactura));\nrow += c('String', esc(fechaFactura));\nrow += c('String', esc(fechaVenc));\nrow += c('String', esc(codCliente));\nrow += c('String', esc(emisorNombre));\nrow += c('String', esc(emisorCif));\nrow += c('String', esc(receptorNombre));\nrow += c('String', esc(receptorCif));\nrow += c('String', esc(receptorDir));\nrow += c('Number', String(base));\nrow += c('Number', String(pctIva));\nrow += c('Number', String(cuotaIva));\nrow += c('Number', String(total));\nrow += c('String', esc(formaPago));\nrow += c('String', esc(iban));\nrow += '</ss:Row>';\nlet rutaArchivo = 'webhook';\ntry { const p = $item(0).$node['Separar Archivos'].json.path; if(p) rutaArchivo=p; } catch(e){}\ntry { const p = $item(0).$node['Extraer Adjuntos Email'].json.savePath; if(p && rutaArchivo==='webhook') rutaArchivo=p; } catch(e){}\nlet xml = '';\ntry { const b = await this.helpers.getBinaryDataBuffer(0,'data'); if(b && b.length>0) xml = b.toString('utf-8'); } catch(e){}\nconst NEW_TOKEN = 'Fecha Vencimiento';\nconst hasNewSchema = xml.includes(NEW_TOKEN);\nif (hasNewSchema && numFactura !== 'No disponible' && xml.includes('>'+esc(numFactura)+'</ss:Data>')) {\n  return [{ json: { success: false, reason: 'Duplicate', invoiceNum: numFactura, file: rutaArchivo } }];\n}\nconst re = /(<\\/(?:ss:)?Table\\s*>)/i;\nif (hasNewSchema && re.test(xml)) {\n  xml = xml.replace(re, row + '\\n$1');\n} else {\n  const hc = (t) => '<ss:Cell ss:StyleID='+q+'header'+q+'><ss:Data ss:Type='+q+'String'+q+'>'+t+'</ss:Data></ss:Cell>';\n  const hdr = '<ss:Row ss:Height='+q+'30'+q+'>'\n    + hc('Nº Factura') + hc('Fecha Factura') + hc('Fecha Vencimiento') + hc('Código Cliente')\n    + hc('Emisor') + hc('CIF Emisor')\n    + hc('Receptor') + hc('CIF Receptor') + hc('Dir Receptor')\n    + hc('Base Imponible') + hc('% IVA') + hc('Cuota IVA') + hc('Total')\n    + hc('Forma Pago') + hc('IBAN')\n    + '</ss:Row>';\n  xml = '<?xml version='+q+'1.0'+q+' encoding='+q+'UTF-8'+q+'?>'\n      + '<?mso-application progid='+q+'Excel.Sheet'+q+'?>'\n      + '<Workbook xmlns='+q+'urn:schemas-microsoft-com:office:spreadsheet'+q+' xmlns:ss='+q+'urn:schemas-microsoft-com:office:spreadsheet'+q+'>'\n      + '<Styles>'\n      +   '<Style ss:ID='+q+'Default'+q+'><Font ss:FontName='+q+'Calibri'+q+' ss:Size='+q+'11'+q+'/></Style>'\n      +   '<Style ss:ID='+q+'header'+q+'><Font ss:Bold='+q+'1'+q+' ss:Color='+q+'#FFFFFF'+q+' ss:FontName='+q+'Calibri'+q+' ss:Size='+q+'11'+q+'/><Interior ss:Color='+q+'#1F4E79'+q+' ss:Pattern='+q+'Solid'+q+'/></Style>'\n      + '</Styles>'\n      + '<Worksheet ss:Name='+q+'Facturas'+q+'><Table>'+hdr+row+'</Table></Worksheet>'\n      + '</Workbook>';\n}\nreturn [{ json: { success: true, file: rutaArchivo }, binary: { data: { data: Buffer.from(xml,'utf-8').toString('base64'), mimeType:'application/vnd.ms-excel', fileName:'tabla_excell_facturas.xls', fileExtension:'xls' } } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [ 2800, 0 ],
+      "position": [
+        2800,
+        0
+      ],
       "name": "Procesar"
     },
     {
@@ -275,7 +326,10 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [ 3000, 0 ],
+      "position": [
+        3000,
+        0
+      ],
       "name": "¿Nuevo?"
     },
     {
@@ -285,7 +339,10 @@
       },
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
-      "position": [ 3200, -100 ],
+      "position": [
+        3200,
+        -100
+      ],
       "name": "Guardar"
     },
     {
@@ -302,7 +359,10 @@
       },
       "name": "¿Viene de Carpeta?",
       "type": "n8n-nodes-base.if",
-      "position": [ 3400, 0 ]
+      "position": [
+        3400,
+        0
+      ]
     },
     {
       "parameters": {
@@ -310,7 +370,10 @@
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
-      "position": [ 3600, -100 ],
+      "position": [
+        3600,
+        -100
+      ],
       "name": "Mover PDF",
       "continueOnFail": true
     },
@@ -327,7 +390,10 @@
       },
       "type": "n8n-nodes-base.emailReadImap",
       "typeVersion": 2,
-      "position": [ 0, 500 ],
+      "position": [
+        0,
+        500
+      ],
       "name": "Email Leer (IMAP)",
       "credentials": {
         "imap": {
@@ -342,7 +408,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [ 220, 500 ],
+      "position": [
+        220,
+        500
+      ],
       "name": "Extraer Adjuntos Email"
     },
     {
@@ -354,7 +423,10 @@
       },
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
-      "position": [ 460, 500 ],
+      "position": [
+        460,
+        500
+      ],
       "name": "Guardar Adjunto Email",
       "continueOnFail": true
     }
@@ -362,122 +434,272 @@
   "connections": {
     "Cada Minuto": {
       "main": [
-        [ { "node": "Buscar PDFs", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Buscar PDFs",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Buscar PDFs": {
       "main": [
-        [ { "node": "Hay Archivos?", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Hay Archivos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Hay Archivos?": {
       "main": [
-        [ { "node": "Separar Archivos", "type": "main", "index": 0 } ],
+        [
+          {
+            "node": "Separar Archivos",
+            "type": "main",
+            "index": 0
+          }
+        ],
         []
       ]
     },
     "Separar Archivos": {
       "main": [
-        [ { "node": "Bucle", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Bucle",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Bucle": {
       "main": [
         [],
-        [ { "node": "Leer PDF", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Leer PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Leer PDF": {
       "main": [
-        [ { "node": "Texto", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Texto": {
       "main": [
-        [ { "node": "¿Vacío?", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "¿Vacío?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "¿Vacío?": {
       "main": [
-        [ { "node": "Releer", "type": "main", "index": 0 } ],
-        [ { "node": "Ollama", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Releer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ollama",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Releer": {
       "main": [
-        [ { "node": "OCR", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "OCR": {
       "main": [
-        [ { "node": "Espera", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Espera",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Espera": {
       "main": [
-        [ { "node": "Resultado", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Resultado": {
       "main": [
-        [ { "node": "Ollama", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Ollama",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Webhook Paperless": {
       "main": [
-        [ { "node": "Obtener OCR Paperless Webhook", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Obtener OCR Paperless Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Obtener OCR Paperless Webhook": {
       "main": [
-        [ { "node": "Ollama", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Ollama",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Ollama": {
       "main": [
-        [ { "node": "Excel", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Excel",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Excel": {
       "main": [
-        [ { "node": "Procesar", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Procesar",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Procesar": {
       "main": [
-        [ { "node": "¿Nuevo?", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "¿Nuevo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "¿Nuevo?": {
       "main": [
-        [ { "node": "Guardar", "type": "main", "index": 0 } ],
-        [ { "node": "¿Viene de Carpeta?", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Guardar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Viene de Carpeta?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Guardar": {
       "main": [
-        [ { "node": "¿Viene de Carpeta?", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "¿Viene de Carpeta?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "¿Viene de Carpeta?": {
       "main": [
-        [ { "node": "Mover PDF", "type": "main", "index": 0 } ],
+        [
+          {
+            "node": "Mover PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
         []
       ]
     },
     "Mover PDF": {
       "main": [
-        [ { "node": "Bucle", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Bucle",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Email Leer (IMAP)": {
       "main": [
-        [ { "node": "Extraer Adjuntos Email", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Extraer Adjuntos Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Extraer Adjuntos Email": {
       "main": [
-        [ { "node": "Guardar Adjunto Email", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Guardar Adjunto Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   }

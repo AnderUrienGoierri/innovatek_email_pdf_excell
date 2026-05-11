@@ -1,0 +1,270 @@
+{
+  "name": "Facturación Inteligente con IA Agent (Ollama) - ULTRA COMPATIBLE",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "name": "Cada Minuto"
+    },
+    {
+      "parameters": {
+        "command": "mkdir -p /data/pdf_excell/facturas_procesadas && find /data/pdf_excell/entrada_facturas_pdf/ -maxdepth 1 -type f \\( -iname \"*.pdf\" -o -iname \"*.jpg\" -o -iname \"*.jpeg\" -o -iname \"*.png\" \\)"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [200, 0],
+      "name": "Buscar PDFs",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.stdout }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [400, 0],
+      "name": "Hay Archivos?"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.stdout.trim().split('\\n').filter(f => /\\.(pdf|jpe?g|png)$/i.test(f)).map(f => ({ json: { path: f } }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [600, -100],
+      "name": "Separar Archivos"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [800, -100],
+      "name": "Bucle"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "={{ $json.path }}"
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [1000, -100],
+      "name": "Leer PDF"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data"
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [1200, -100],
+      "name": "Texto",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.text }}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1400, -100],
+      "name": "¿Vacío?"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "={{ $('Bucle').first().json.path }}"
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [1500, 100],
+      "name": "Releer"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8010/api/documents/post_document/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Basic Y29uc3VtZXI6YWRtaW4xMjM="
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "document",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": { "response": { "response": { "responseFormat": "text" } } }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1700, 100],
+      "name": "OCR"
+    },
+    {
+      "parameters": { "amount": 15, "unit": "seconds" },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1900, 100],
+      "name": "Espera"
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8010/api/documents/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Basic Y29uc3VtZXI6YWRtaW4xMjM="
+            }
+          ]
+        },
+        "options": { "queryParameters": { "parameters": [{ "name": "page_size", "value": "1" }, { "name": "ordering", "value": "-added" }] } }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [2100, 100],
+      "name": "Resultado"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Eres un Agente de Facturación Autónomo. Extrae los datos de la factura en JSON puro."
+        }
+      },
+      "type": "n8n-nodes-base.aiAgent",
+      "typeVersion": 1,
+      "position": [2400, 0],
+      "name": "AI Agent (Facturación)"
+    },
+    {
+      "parameters": {
+        "model": "qwen2.5:14b",
+        "baseUrl": "http://192.168.5.152:11434"
+      },
+      "type": "n8n-nodes-base.lmChatOllama",
+      "typeVersion": 1,
+      "position": [2300, 200],
+      "name": "Ollama Chat Model"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.windowBufferMemory",
+      "typeVersion": 1,
+      "position": [2500, 200],
+      "name": "Memoria de Sesión"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "/data/pdf_excell/tabla_excell_facturas.xls",
+        "continueOnFail": true
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [2700, 0],
+      "name": "Excel"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ai = $node[\"AI Agent (Facturación)\"].json.output;\nlet d;\ntry { d = JSON.parse(ai.match(/\\{[\\s\\S]*\\}/)[0]); } catch(e) { throw new Error('Bad JSON'); }\nconst gv = (val) => { if (!val || String(val).trim() === '') return 'No disponible'; return String(val).trim(); };\nlet rN = gv(d.factura_numero || d.numero_factura);\nlet rF = gv(d.factura_fecha || d.fecha_factura);\nconst esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst q = String.fromCharCode(34);\nconst c = (t, v) => '<ss:Cell><ss:Data ss:Type=' + q + t + q + '>' + v + '</ss:Data></ss:Cell>';\nlet row = '<ss:Row>' + c('String', esc(rN)) + c('String', esc(rF)) + '</ss:Row>';\nreturn [{ json: { success: true }, binary: { data: { data: Buffer.from(row, 'utf-8').toString('base64'), fileName: 'tabla.xls' } } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2900, 0],
+      "name": "Procesar"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.success }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [3100, 0],
+      "name": "¿Nuevo?"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/data/pdf_excell/tabla_excell_facturas.xls"
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [3300, -100],
+      "name": "Guardar"
+    },
+    {
+      "parameters": {
+        "command": "={{ 'mv \"' + $('Bucle').first().json.path + '\" /data/pdf_excell/facturas_procesadas/' }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [3500, 0],
+      "name": "Mover PDF"
+    }
+  ],
+  "connections": {
+    "Cada Minuto": { "main": [[{ "node": "Buscar PDFs", "type": "main", "index": 0 }]] },
+    "Buscar PDFs": { "main": [[{ "node": "Hay Archivos?", "type": "main", "index": 0 }]] },
+    "Hay Archivos?": { "main": [[{ "node": "Separar Archivos", "type": "main", "index": 0 }]] },
+    "Separar Archivos": { "main": [[{ "node": "Bucle", "type": "main", "index": 0 }]] },
+    "Bucle": { "main": [[], [{ "node": "Leer PDF", "type": "main", "index": 0 }]] },
+    "Leer PDF": { "main": [[{ "node": "Texto", "type": "main", "index": 0 }]] },
+    "Texto": { "main": [[{ "node": "¿Vacío?", "type": "main", "index": 0 }]] },
+    "¿Vacío?": { "main": [[{ "node": "Releer", "type": "main", "index": 0 }], [{ "node": "AI Agent (Facturación)", "type": "main", "index": 0 }]] },
+    "Releer": { "main": [[{ "node": "OCR", "type": "main", "index": 0 }]] },
+    "OCR": { "main": [[{ "node": "Espera", "type": "main", "index": 0 }]] },
+    "Espera": { "main": [[{ "node": "Resultado", "type": "main", "index": 0 }]] },
+    "Resultado": { "main": [[{ "node": "AI Agent (Facturación)", "type": "main", "index": 0 }]] },
+    "AI Agent (Facturación)": { "main": [[{ "node": "Excel", "type": "main", "index": 0 }]] },
+    "Ollama Chat Model": { "ai_languageModel": [[{ "node": "AI Agent (Facturación)", "type": "ai_languageModel", "index": 0 }]] },
+    "Memoria de Sesión": { "ai_memory": [[{ "node": "AI Agent (Facturación)", "type": "ai_memory", "index": 0 }]] },
+    "Excel": { "main": [[{ "node": "Procesar", "type": "main", "index": 0 }]] },
+    "Procesar": { "main": [[{ "node": "¿Nuevo?", "type": "main", "index": 0 }]] },
+    "¿Nuevo?": { "main": [[{ "node": "Guardar", "type": "main", "index": 0 }], [{ "node": "Mover PDF", "type": "main", "index": 0 }]] },
+    "Guardar": { "main": [[{ "node": "Mover PDF", "type": "main", "index": 0 }]] },
+    "Mover PDF": { "main": [[{ "node": "Bucle", "type": "main", "index": 0 }]] }
+  }
+}

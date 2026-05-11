@@ -1,0 +1,31 @@
+# Documentos Privados (Facturas y Excel)
+tabla_excell_facturas.xls
+*.pdf
+*.xls
+*.xlsx
+*.csv
+*.png
+*.jpg
+*.jpeg
+
+# Carpetas de datos (se ignoran los archivos de dentro pero se mantiene la carpeta)
+entrada_facturas_pdf/*
+facturas_procesadas/*
+entrada_n8n_directo/*
+pruebas_facturas/*
+image/*
+media/*
+
+# Excepto archivos placeholder para mantener la estructura en Git
+!**/README.md
+!**/.gitkeep
+
+# Archivos de sistema y logs
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
+.env
+
+# Backups de n8n
+*.backup.json
