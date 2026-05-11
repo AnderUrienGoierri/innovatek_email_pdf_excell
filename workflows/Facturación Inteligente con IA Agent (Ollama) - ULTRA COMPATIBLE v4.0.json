@@ -137,7 +137,7 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
       "position": [
-        960,
+        944,
         -208
       ],
       "name": "Releer",
@@ -184,7 +184,7 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1,
       "position": [
-        1296,
+        1344,
         -208
       ],
       "name": "Espera",
@@ -208,7 +208,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        1472,
+        1536,
         -208
       ],
       "name": "Resultado",
@@ -342,6 +342,7 @@
       "name": "Simple Memory"
     }
   ],
+  "pinData": {},
   "connections": {
     "Cada Minuto": {
       "main": [
@@ -472,17 +473,6 @@
         ]
       ]
     },
-    "Resultado": {
-      "main": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Excel": {
       "main": [
         [
@@ -545,11 +535,11 @@
         ]
       ]
     },
-    "AI Agent": {
+    "Resultado": {
       "main": [
         [
           {
-            "node": "Excel",
+            "node": "AI Agent",
             "type": "main",
             "index": 0
           }
@@ -577,11 +567,32 @@
           }
         ]
       ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Excel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "pinData": {},
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "83444635-c2ab-4fd2-95f0-7cc5a63edbea",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "b7efde188873846b5c1be3a8fd200fdc791b9ba058565350550c7e3e135a1a0b"
-  }
+  },
+  "id": "KhV4Ob6Mp9qKzti4",
+  "tags": []
 }
