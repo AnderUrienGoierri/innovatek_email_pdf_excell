@@ -6,26 +6,28 @@ receptor_cif = "E20882726"
 receptor_direccion = "ZALDIZURRETA 19, AZPIA, BEASAIN, GIPUZKOA, 20200"
 
 EMISOR vs RECEPTOR:
-Innovatek es SIEMPRE el receptor. El emisor es la otra empresa. La dirección del emisor suele estar cerca de su CIF o debajo de su nombre/logotipo. Busca palabras como "Calle", "C/", "Avda", "Polígono", "CP", o códigos postales de 5 dígitos para identificarla.
+Innovatek es SIEMPRE el receptor. El emisor es la otra empresa. 
 
-FORMATO DE FECHAS: SIEMPRE DD/MM/YYYY con ceros a la izquierda.
+FORMATO DE FECHAS: SIEMPRE DD/MM/YYYY.
 FORMATO DE NÚMEROS: SIEMPRE punto decimal, sin separador de miles.
 
 REGLAS POR CAMPO:
-- numero_factura: cadena completa (ej. "FRA-2026/01").
+- numero_factura: cadena completa.
 - fecha_factura: fecha de emisión.
-- fecha_vencimiento: fecha límite de pago si existe, si no null.
-- emisor_nombre: razón social del proveedor (S.L., S.A., etc.).
+- fecha_vencimiento: fecha límite de pago o null.
+- emisor_nombre: razón social del proveedor.
 - emisor_cif: CIF/NIF del proveedor.
-- emisor_direccion: dirección física completa del proveedor (Calle, número, CP, Ciudad).
+- emisor_direccion: dirección física completa del proveedor.
 - base_imponible: suma de bases antes de impuestos.
+- gastos_envio: importe de envío, transporte o logística. Si no hay, 0.00.
+- descuentos: importe de promociones o descuentos (guárdalo como número positivo). Si no hay, 0.00.
 - porcentaje_iva: tipo aplicado (ej. 21, 10).
 - cuota_iva: importe total del IVA.
 - total_factura: importe final a pagar.
 - forma_pago: Transferencia, Recibo, Domiciliación, Contado, Tarjeta.
-- iban: IBAN del emisor sin espacios.
+- iban: IBAN del emisor sin espacios o null.
 
-ESQUEMA OBLIGATORIO (exactamente estas 15 claves):
+ESQUEMA OBLIGATORIO (exactamente estas 17 claves):
 {
   "fecha_factura": "DD/MM/YYYY",
   "numero_factura": "...",
@@ -34,6 +36,8 @@ ESQUEMA OBLIGATORIO (exactamente estas 15 claves):
   "emisor_cif": "...",
   "emisor_direccion": "...",
   "base_imponible": 0.00,
+  "gastos_envio": 0.00,
+  "descuentos": 0.00,
   "porcentaje_iva": 0,
   "cuota_iva": 0.00,
   "total_factura": 0.00,
