@@ -1,15 +1,9 @@
 {
-  "name": "Facturación Inteligente con IA Agent (Ollama) - ULTRA COMPATIBLE",
+  "name": "Facturación Inteligente con IA Agent (Ollama) - ULTRA COMPATIBLE v4.0",
   "nodes": [
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "minutes"
-            }
-          ]
-        }
+        "rule": { "interval": [{ "field": "minutes" }] }
       },
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -28,14 +22,7 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "string": [
-            {
-              "value1": "={{ $json.stdout }}",
-              "operation": "isNotEmpty"
-            }
-          ]
-        }
+        "conditions": { "string": [{ "value1": "={{ $json.stdout }}", "operation": "isNotEmpty" }] }
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
@@ -59,20 +46,14 @@
       "name": "Bucle"
     },
     {
-      "parameters": {
-        "operation": "read",
-        "fileSelector": "={{ $json.path }}"
-      },
+      "parameters": { "operation": "read", "fileSelector": "={{ $json.path }}" },
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
       "position": [1000, -100],
       "name": "Leer PDF"
     },
     {
-      "parameters": {
-        "operation": "pdf",
-        "binaryPropertyName": "data"
-      },
+      "parameters": { "operation": "pdf", "binaryPropertyName": "data" },
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1,
       "position": [1200, -100],
@@ -81,14 +62,7 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "string": [
-            {
-              "value1": "={{ $json.text }}",
-              "operation": "isEmpty"
-            }
-          ]
-        }
+        "conditions": { "string": [{ "value1": "={{ $json.text }}", "operation": "isEmpty" }] }
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
@@ -96,10 +70,7 @@
       "name": "¿Vacío?"
     },
     {
-      "parameters": {
-        "operation": "read",
-        "fileSelector": "={{ $('Bucle').first().json.path }}"
-      },
+      "parameters": { "operation": "read", "fileSelector": "={{ $('Bucle').first().json.path }}" },
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
       "position": [1500, 100],
@@ -110,25 +81,10 @@
         "method": "POST",
         "url": "http://host.docker.internal:8010/api/documents/post_document/",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "Basic Y29uc3VtZXI6YWRtaW4xMjM="
-            }
-          ]
-        },
+        "headerParameters": { "parameters": [{ "name": "Authorization", "value": "Basic Y29uc3VtZXI6YWRtaW4xMjM=" }] },
         "sendBody": true,
         "contentType": "multipart-form-data",
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "document",
-              "inputDataFieldName": "data"
-            }
-          ]
-        },
-        "options": { "response": { "response": { "responseFormat": "text" } } }
+        "bodyParameters": { "parameters": [{ "name": "document", "inputDataFieldName": "data" }] }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
@@ -146,14 +102,7 @@
       "parameters": {
         "url": "http://host.docker.internal:8010/api/documents/",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "Basic Y29uc3VtZXI6YWRtaW4xMjM="
-            }
-          ]
-        },
+        "headerParameters": { "parameters": [{ "name": "Authorization", "value": "Basic Y29uc3VtZXI6YWRtaW4xMjM=" }] },
         "options": { "queryParameters": { "parameters": [{ "name": "page_size", "value": "1" }, { "name": "ordering", "value": "-added" }] } }
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -163,8 +112,10 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "=Analiza el siguiente texto de una factura y extrae los datos en formato JSON. Si no hay texto, indica que no se ha podido leer.\n\nTexto de la factura: {{ $json.text || $json.results[0].content }}",
         "options": {
-          "systemMessage": "Eres un Agente de Facturación Autónomo. Extrae los datos de la factura en JSON puro."
+          "systemMessage": "Eres un sistema experto en extracción de datos de facturas españolas. Tu objetivo es la MÁXIMA PRECISIÓN en los totales fiscales. Devuelves EXCLUSIVAMENTE un objeto JSON.\n\nDATOS DEL RECEPTOR (Innovatek):\n- nombre: \"INNOVATEK- ALEX CALVO GARCIA Y OTRA CB C\"\n- cif: \"E20882726\"\n- direccion: \"ZALDIZURRETA 19, AZPIA, BEASAIN, GIPUZKOA, 20200\"\n\n---\nINSTRUCCIONES DE EXTRACCIÓN:\n1. FECHA: Usa \"Fecha de cargo\" o \"Fecha de emisión\". Ignora periodos. Formato: DD/MM/YYYY.\n2. TOTALES: total_factura = base_imponible + cuota_iva. Es la prioridad absoluta.\n3. IBAN: Extrae completo o parcial (con asteriscos).\n4. PAGO: Elige entre Transferencia, Recibo, Domiciliación, Contado, Tarjeta, Efectivo.\n\nDevuelve SOLO el objeto JSON."
         }
       },
       "type": "n8n-nodes-base.aiAgent",
@@ -183,7 +134,7 @@
       "name": "Ollama Chat Model"
     },
     {
-      "parameters": {},
+      "parameters": { "sessionId": "facturas" },
       "type": "n8n-nodes-base.windowBufferMemory",
       "typeVersion": 1,
       "position": [2500, 200],
@@ -192,17 +143,17 @@
     {
       "parameters": {
         "operation": "read",
-        "fileSelector": "/data/pdf_excell/tabla_excell_facturas.xls",
-        "continueOnFail": true
+        "fileSelector": "/data/pdf_excell/tabla_excell_facturas.xls"
       },
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
       "position": [2700, 0],
-      "name": "Excel"
+      "name": "Excel",
+      "continueOnFail": true
     },
     {
       "parameters": {
-        "jsCode": "const ai = $node[\"AI Agent (Facturación)\"].json.output;\nlet d;\ntry { d = JSON.parse(ai.match(/\\{[\\s\\S]*\\}/)[0]); } catch(e) { throw new Error('Bad JSON'); }\nconst gv = (val) => { if (!val || String(val).trim() === '') return 'No disponible'; return String(val).trim(); };\nlet rN = gv(d.factura_numero || d.numero_factura);\nlet rF = gv(d.factura_fecha || d.fecha_factura);\nconst esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst q = String.fromCharCode(34);\nconst c = (t, v) => '<ss:Cell><ss:Data ss:Type=' + q + t + q + '>' + v + '</ss:Data></ss:Cell>';\nlet row = '<ss:Row>' + c('String', esc(rN)) + c('String', esc(rF)) + '</ss:Row>';\nreturn [{ json: { success: true }, binary: { data: { data: Buffer.from(row, 'utf-8').toString('base64'), fileName: 'tabla.xls' } } }];"
+        "jsCode": "const ai = $node[\"AI Agent (Facturación)\"].json.output;\nlet d;\ntry { const match = ai.match(/\\{[\\s\\S]*\\}/); d = JSON.parse(match ? match[0] : ai); } catch(e) { throw new Error('JSON Error'); }\n\nconst gv = (val) => (!val || String(val).trim() === '' || String(val).toLowerCase() === 'null') ? 'No disponible' : String(val).trim();\nconst esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst num = (v) => parseFloat(String(v || 0).replace(',','.')) || 0;\nconst q = String.fromCharCode(34);\nconst c = (t, v) => `<ss:Cell><ss:Data ss:Type=${q}${t}${q}>${v}</ss:Data></ss:Cell>`;\n\nlet row = `<ss:Row>`;\nrow += c('String', esc(gv(d.numero_factura))); row += c('String', esc(gv(d.fecha_factura))); row += c('String', esc(gv(d.fecha_vencimiento)));\nrow += c('String', esc(gv(d.emisor_nombre))); row += c('String', esc(gv(d.emisor_cif))); row += c('String', esc(gv(d.emisor_direccion)));\nrow += c('String', esc(\"INNOVATEK- ALEX CALVO GARCIA Y OTRA CB C\")); row += c('String', esc(\"E20882726\")); row += c('String', esc(\"ZALDIZURRETA 19, AZPIA, BEASAIN, GIPUZKOA, 20200\"));\nrow += c('Number', String(num(d.base_imponible))); row += c('String', esc(gv(d.porcentaje_iva))); row += c('Number', String(num(d.cuota_iva)));\nrow += c('Number', String(num(d.total_factura))); row += c('String', esc(gv(d.forma_pago))); row += c('String', esc(gv(d.iban)));\nrow += `</ss:Row>`;\n\nlet xml = \"\"; try { xml = (await this.helpers.getBinaryDataBuffer(0, 'data')).toString('utf-8'); } catch (e) {}\nif (xml.includes('>' + esc(gv(d.numero_factura)) + '</ss:Data>')) return [{ json: { success: false, reason: 'Duplicada' } }];\n\nlet finalXml = \"\";\nconst tableEndTag = /<\\/(?:ss:)?Table\\s*>/i;\nif (xml && tableEndTag.test(xml)) { finalXml = xml.replace(tableEndTag, row + '\\n</ss:Table>'); }\nelse {\n  const hc = (t) => `<ss:Cell><ss:Data ss:Type=\"String\">${t}</ss:Data></ss:Cell>`;\n  let header = `<ss:Row>` + hc('Nº Factura')+hc('Fecha')+hc('Vencimiento')+hc('Proveedor')+hc('CIF Prov')+hc('Dir Prov')+hc('Cliente')+hc('CIF Cliente')+hc('Dir Cliente')+hc('Base')+hc('% IVA')+hc('Cuota IVA')+hc('Total')+hc('Pago')+hc('IBAN') + `</ss:Row>`;\n  finalXml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?><?mso-application progid=\"Excel.Sheet\"?><Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\"><Worksheet ss:Name=\"Facturas\"><ss:Table>${header}${row}</ss:Table></Worksheet></Workbook>`;\n}\n\nreturn [{ json: { success: true }, binary: { data: { data: Buffer.from(finalXml, 'utf-8').toString('base64'), fileName: 'tabla_excell_facturas.xls' } } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -211,14 +162,7 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ $json.success }}",
-              "value2": true
-            }
-          ]
-        }
+        "conditions": { "boolean": [{ "value1": "={{ $json.success }}", "value2": true }] }
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
