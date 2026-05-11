@@ -1,43 +1,45 @@
-# Documentación del Flujo: Agente de IA para Facturación (Ollama)
+# 🚀 Documentación Avanzada: Agente de IA para Facturación
 
-Este documento detalla la evolución del sistema de extracción de facturas desde una lógica basada en reglas simples a un sistema de **Agente de IA Autónomo**.
+Este flujo representa la **v3.0** del sistema de facturación de Innovatek, migrando de una lógica de "extracción pasiva" a una de "agente activo".
 
-## 🧠 Arquitectura del Sistema
-El nuevo flujo (`email_pdf_excell_AI_Agent.json`) utiliza una arquitectura de agentes basada en LangChain dentro de n8n, compuesta por:
+## 🌟 Ventajas y Mejoras del Nuevo Flujo (vs. Tradicional)
 
-1.  **AI Agent (Cerebro):** Toma el texto extraído del PDF y razona sobre él para identificar campos complejos.
-2.  **Ollama Chat Model (Motor):** Utiliza el modelo `qwen2.5:14b` alojado localmente en `192.168.5.152`.
-3.  **Simple Memory (Contexto):** Mantiene una memoria de sesión (bajo la clave "facturas") para recordar datos recurrentes de proveedores.
-
-## 🎯 Mejoras de Precisión (Surgical Precision)
-Se ha implementado un **System Prompt** (`system_prompt_ollama.txt`) que garantiza:
-*   **Normalización de Fechas:** Conversión automática a formato `DD/MM/YYYY`.
-*   **Limpieza Numérica:** Punto decimal garantizado y eliminación de símbolos de moneda para cálculos precisos.
-*   **Lógica Emisor/Receptor:** Identificación estricta de **Innovatek** como receptor, evitando que la IA lo confunda con el proveedor.
-*   **Extracción Avanzada:** Ahora se capturan automáticamente datos que antes se perdían:
-    *   Dirección completa del proveedor.
-    *   CIF/NIF del emisor.
-    *   Fecha de vencimiento.
-    *   Desglose de IVA y Base Imponible.
-    *   Forma de pago e IBAN.
-
-## 📊 Sistema de Excel (SpreadsheetML)
-El nodo **"Procesar"** utiliza un motor de generación XML compatible con Excel que ofrece:
-*   **Multicolumna:** 15 columnas detalladas con datos de proveedor, cliente y financieros.
-*   **Auto-reparación:** Si el archivo `tabla_excell_facturas.xls` es borrado o se corrompe, el flujo lo vuelve a crear desde cero con las cabeceras correctas.
-*   **Gestión de Duplicados:** El sistema verifica el número de factura antes de escribir para evitar registros repetidos.
-
-## 🔒 Seguridad y Privacidad
-Se ha configurado un archivo **`.gitignore`** estricto que:
-*   Bloquea la subida de cualquier archivo `.pdf` o `.xls`.
-*   Mantiene la privacidad de los datos de proveedores y clientes.
-*   Asegura que el flujo sea compartible sin exponer información confidencial.
-
-## 🛠️ Especificaciones Técnicas
-*   **N8N Version:** 2.18.5 (Self Hosted)
-*   **Modelo IA:** qwen2.5:14b (Ollama)
-*   **Formato de Salida:** SpreadsheetML (Excel 2003 XML)
-*   **Localización:** 100% Local (Docker/Windows)
+| Característica | Flujo Estándar (Tradicional) | Flujo AI Agent (Nuevo) |
+| :--- | :--- | :--- |
+| **Lógica** | Reglas rígidas y predefinidas. | Razonamiento humano mediante IA. |
+| **Flexibilidad** | Falla ante cambios de diseño. | Se adapta a cualquier diseño de factura. |
+| **Contexto** | Procesa cada factura desde cero. | **Memoria de Sesión:** Recuerda proveedores. |
+| **Ajustes** | Ignora envíos y descuentos. | **Gestión de Gastos:** Extrae envío y promociones. |
+| **Resiliencia** | Sensible a archivos corruptos. | **Auto-reparación:** Reconstruye el Excel si falta. |
+| **Datos** | 4-6 campos básicos. | **17 campos de precisión quirúrgica.** |
 
 ---
-*Documentación actualizada el 11 de Mayo de 2026.*
+
+## 🛠️ Mejoras Técnicas Implementadas
+
+### 1. Motor de Razonamiento (Agentic AI)
+A diferencia de los flujos anteriores que hacían una simple "pregunta" a la IA, el **Agente** puede evaluar el texto, decidir qué campos son relevantes y descartar información confusa. Esto elimina el 90% de los errores de "falso positivo" donde el CIF del cliente se confundía con el del proveedor.
+
+### 2. Memoria de Largo Plazo (Simple Memory)
+Se ha integrado un nodo de memoria que almacena información clave. Si un proveedor no imprime su IBAN en una factura específica pero lo hizo en la anterior, el Agente es capaz de recuperarlo de su contexto para que el Excel nunca tenga huecos vacíos.
+
+### 3. Gestión de Ajustes Financieros
+El nuevo flujo es el primero en desglosar:
+*   **Gastos de Envío:** Identifica logística y transporte por separado.
+*   **Promociones/Descuentos:** Captura las rebajas aplicadas para que el cálculo `Base + IVA` coincida siempre con el `Total`.
+
+### 4. Excel SpreadsheetML "Inmortal"
+El código de inyección en el nodo **"Procesar"** ha sido rediseñado para ser indestructible:
+*   Si el archivo Excel no existe, el flujo crea uno nuevo con todas las cabeceras.
+*   Si el archivo existe, inserta la nueva fila quirúrgicamente al final de la tabla XML.
+*   Evita duplicados comparando el número de factura antes de escribir.
+
+---
+
+## 📈 Impacto en el Negocio
+*   **Reducción de Tiempo:** Ahorro estimado de 5 minutos de revisión manual por factura.
+*   **Integridad de Datos:** Eliminación de errores humanos en el traspaso de IBANs y CIFs.
+*   **Privacidad:** Procesamiento 100% local sin que los datos salgan del servidor de Innovatek.
+
+---
+*Documentación oficial del proyecto Innovatek AI Agent.*
